@@ -3,6 +3,7 @@ package com.smartlearning.controller;
 import com.smartlearning.dto.ApiResponse;
 import com.smartlearning.entity.Course;
 import com.smartlearning.service.CourseService;
+import com.smartlearning.annotation.RequireRole;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,6 +29,7 @@ public class CourseController {
     }
 
     @PostMapping
+    @RequireRole("ADMIN")
     public ApiResponse<Course> create(@RequestBody Course course,
                                        @RequestAttribute("userId") Long userId) {
         course.setCreatedBy(userId);
@@ -35,12 +37,14 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
+    @RequireRole("ADMIN")
     public ApiResponse<Course> update(@PathVariable Long id, @RequestBody Course course) {
         course.setId(id);
         return ApiResponse.ok(courseService.update(course));
     }
 
     @DeleteMapping("/{id}")
+    @RequireRole("ADMIN")
     public ApiResponse<?> delete(@PathVariable Long id) {
         courseService.delete(id);
         return ApiResponse.ok();

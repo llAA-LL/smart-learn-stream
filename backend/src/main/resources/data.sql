@@ -4,6 +4,7 @@ USE smart_learning;
 -- ========== Users ==========
 -- 密码统一为 BCrypt("123456")；ON DUPLICATE KEY UPDATE 用于把历史 SHA-256 种子密码迁移为 BCrypt
 INSERT INTO users (id, username, password, real_name, role) VALUES
+(1, 'admin', '$2b$10$CecCeA5VDbu.KzqkGh41x./sixx2UOAIkDEUH6GQ6AmtFKuT3sHam', '系统管理员', 'ADMIN'),
 (2, 'zhangsan', '$2b$10$BWZdinQXCETSGm7rG3NQ0eu0q.OqQcJkDqHNf6QK.5mUJs80PBQIu', '张三', 'STUDENT'),
 (3, 'lisi', '$2b$10$BWZdinQXCETSGm7rG3NQ0eu0q.OqQcJkDqHNf6QK.5mUJs80PBQIu', '李四', 'STUDENT')
 ON DUPLICATE KEY UPDATE password = VALUES(password);

@@ -37,7 +37,7 @@
           <el-menu-item index="/knowledge-graph">
             <span>知识图谱</span>
           </el-menu-item>
-          <el-menu-item index="/questions">
+          <el-menu-item v-if="userStore.user?.role === 'ADMIN'" index="/questions">
             <span>题库管理</span>
           </el-menu-item>
         </template>

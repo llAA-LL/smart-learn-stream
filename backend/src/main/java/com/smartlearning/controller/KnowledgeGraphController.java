@@ -3,6 +3,7 @@ package com.smartlearning.controller;
 import com.smartlearning.dto.ApiResponse;
 import com.smartlearning.entity.KnowledgePoint;
 import com.smartlearning.service.KnowledgeGraphService;
+import com.smartlearning.annotation.RequireRole;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,17 +33,20 @@ public class KnowledgeGraphController {
     }
 
     @PostMapping("/nodes")
+    @RequireRole("ADMIN")
     public ApiResponse<KnowledgePoint> createNode(@RequestBody KnowledgePoint kp) {
         return ApiResponse.ok(kgService.create(kp));
     }
 
     @PutMapping("/nodes/{id}")
+    @RequireRole("ADMIN")
     public ApiResponse<KnowledgePoint> updateNode(@PathVariable Long id, @RequestBody KnowledgePoint kp) {
         kp.setId(id);
         return ApiResponse.ok(kgService.update(kp));
     }
 
     @DeleteMapping("/nodes/{id}")
+    @RequireRole("ADMIN")
     public ApiResponse<?> deleteNode(@PathVariable Long id) {
         kgService.delete(id);
         return ApiResponse.ok();

@@ -46,6 +46,19 @@
     - `AnswerGraderTest`：单选/多选/判断/空值（4 个用例）
     - `UserServiceTest`：BCrypt 登录、错误密码、注册强制角色、重复用户名（5 个用例）
 
+## 权限体系（2026-08-09 第二轮）
+
+11. **新增 `@RequireRole` 注解 + `RoleCheckAspect`**：按 JwtInterceptor 写入的
+    role 请求属性做切面校验，无权限抛 403（真实 HTTP 状态码）。
+12. **管理端接口 ADMIN 化**：
+    - `QuestionController`（list/get/create/update/delete）：全部仅 ADMIN，
+      修复学生可经 `/api/questions` 直接看到题目答案的问题；
+    - `CourseController` 的 create/update/delete：仅 ADMIN；
+    - `KnowledgeGraphController` 的 create/update/delete：仅 ADMIN（读接口保持开放）。
+13. **初始化管理员**：`data.sql` 新增内置账号 `admin / admin123`（BCrypt），
+    每次启动幂等 upsert。前端侧边栏"题目管理"按角色对 STUDENT 隐藏。
+14. 新增 `RoleCheckAspectTest`（3 个用例），后端测试总数 12 个。
+
 ## 验证方式
 
 ```bash
