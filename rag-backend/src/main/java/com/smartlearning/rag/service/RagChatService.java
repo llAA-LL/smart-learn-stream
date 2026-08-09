@@ -42,6 +42,7 @@ public class RagChatService {
     private final RagProperties props;
     private final ChatMemoryService memoryService;
     private final AnswerCacheService cacheService;
+    private final PersonalContextService personalContextService;
     private final String systemPromptTemplate;
 
     public RagChatService(HybridRetrievalService retrievalService,
@@ -49,26 +50,34 @@ public class RagChatService {
                           ChatModel chatModel,
                           RagProperties props,
                           ChatMemoryService memoryService,
-                          AnswerCacheService cacheService) throws Exception {
+                          AnswerCacheService cacheService,
+                          PersonalContextService personalContextService) throws Exception {
         this.retrievalService = retrievalService;
         this.rerankService = rerankService;
         this.chatModel = chatModel;
         this.props = props;
         this.memoryService = memoryService;
         this.cacheService = cacheService;
+        this.personalContextService = personalContextService;
         this.systemPromptTemplate = new ClassPathResource("prompts/system-prompt.txt")
                 .getContentAsString(StandardCharsets.UTF_8);
     }
 
     public ChatResponse chat(ChatRequest request) {
         long start = System.currentTimeMillis();
+        boolean cacheable = isCacheable(request);
         List<ChatTurn> turns = loadTurns(request);
-        CachedAnswer cached = cacheService.get(request.question());
-        if (cached != null) {
-            log.info("chat cid={} cache=HIT total={}ms",
-                    request.conversationId(), System.currentTimeMillis() - start);
-            return new ChatResponse(request.conversationId(), cached.answer(), cached.citations(),
-                    cached.elapsedMs());
+        String personalContext = null;
+        if (cacheable) {
+            CachedAnswer cached = cacheService.get(request.question());
+            if (cached != null) {
+                log.info("chat cid={} cache=HIT total={}ms",
+                        request.conversationId(), System.currentTimeMillis() - start);
+                return new ChatResponse(request.conversationId(), cached.answer(), cached.citations(),
+                        cached.elapsedMs());
+            }
+        } else {
+            personalContext = personalContextService.fetch(request.token());
         }
 
         int topK = props.getRetrieval().getRerankTopK();
@@ -79,7 +88,7 @@ public class RagChatService {
         long t3 = System.currentTimeMillis();
         List<Citation> citations = toCitations(chunks);
 
-        if (chunks.isEmpty()) {
+        if (chunks.isEmpty() && personalContext == null) {
             remember(request, NO_CONTEXT_ANSWER);
             log.info("chat cid={} cache=MISS retrieve={}ms rerank={}ms generate=0ms total={}ms chunks=0",
                     request.conversationId(), t2 - t1, t3 - t2, System.currentTimeMillis() - start);
@@ -87,11 +96,13 @@ public class RagChatService {
                     System.currentTimeMillis() - start);
         }
 
-        List<Message> messages = buildMessages(request, chunks, turns);
+        List<Message> messages = buildMessages(request, chunks, turns, personalContext);
         String answer = chatModel.call(new Prompt(messages)).getResult().getOutput().getText();
         long t4 = System.currentTimeMillis();
         remember(request, answer);
-        cacheService.put(request.question(), answer, citations, System.currentTimeMillis() - start);
+        if (cacheable) {
+            cacheService.put(request.question(), answer, citations, System.currentTimeMillis() - start);
+        }
         log.info("chat cid={} cache=MISS retrieve={}ms rerank={}ms generate={}ms total={}ms citations={}",
                 request.conversationId(), t2 - t1, t3 - t2, t4 - t3,
                 System.currentTimeMillis() - start, citations.size());
@@ -101,13 +112,19 @@ public class RagChatService {
 
     public ChatStream stream(ChatRequest request) {
         long start = System.currentTimeMillis();
+        boolean cacheable = isCacheable(request);
         List<ChatTurn> turns = loadTurns(request);
-        CachedAnswer cached = cacheService.get(request.question());
-        if (cached != null) {
-            log.info("stream cid={} cache=HIT total={}ms",
-                    request.conversationId(), System.currentTimeMillis() - start);
-            return new ChatStream(cached.citations(),
-                    Flux.just(cached.answer()).doOnComplete(() -> remember(request, cached.answer())));
+        String personalContext = null;
+        if (cacheable) {
+            CachedAnswer cached = cacheService.get(request.question());
+            if (cached != null) {
+                log.info("stream cid={} cache=HIT total={}ms",
+                        request.conversationId(), System.currentTimeMillis() - start);
+                return new ChatStream(cached.citations(),
+                        Flux.just(cached.answer()).doOnComplete(() -> remember(request, cached.answer())));
+            }
+        } else {
+            personalContext = personalContextService.fetch(request.token());
         }
 
         int topK = props.getRetrieval().getRerankTopK();
@@ -117,11 +134,11 @@ public class RagChatService {
         List<RankedChunk> chunks = rerankService.rerank(request.question(), fused);
         long t3 = System.currentTimeMillis();
         List<Citation> citations = toCitations(chunks);
-        if (chunks.isEmpty()) {
+        if (chunks.isEmpty() && personalContext == null) {
             return new ChatStream(citations,
                     Flux.just(NO_CONTEXT_ANSWER).doOnComplete(() -> remember(request, NO_CONTEXT_ANSWER)));
         }
-        List<Message> messages = buildMessages(request, chunks, turns);
+        List<Message> messages = buildMessages(request, chunks, turns, personalContext);
         StringBuilder answer = new StringBuilder();
         Flux<String> flux = chatModel.stream(new Prompt(messages))
                 .map(response -> response.getResult().getOutput().getText())
@@ -130,8 +147,10 @@ public class RagChatService {
                 .doOnComplete(() -> {
                     long end = System.currentTimeMillis();
                     remember(request, answer.toString());
-                    cacheService.put(request.question(), answer.toString(), citations,
-                            end - start);
+                    if (cacheable) {
+                        cacheService.put(request.question(), answer.toString(), citations,
+                                end - start);
+                    }
                     log.info("stream cid={} cache=MISS retrieve={}ms rerank={}ms generate={}ms total={}ms citations={}",
                             request.conversationId(), t2 - t1, t3 - t2, end - t3, end - start,
                             citations.size());
@@ -150,10 +169,12 @@ public class RagChatService {
         return rerankService.rerank(question, chunks);
     }
 
-    private List<Message> buildMessages(ChatRequest request, List<RankedChunk> chunks, List<ChatTurn> turns) {
+    private List<Message> buildMessages(ChatRequest request, List<RankedChunk> chunks, List<ChatTurn> turns,
+                                        String personalContext) {
         String context = buildContext(chunks);
         PromptTemplate template = new PromptTemplate(systemPromptTemplate);
         template.add("context", context);
+        template.add("personal_context", personalContext == null ? "" : personalContext);
         String system = template.render();
 
         List<Message> messages = new ArrayList<>();
@@ -186,6 +207,11 @@ public class RagChatService {
         memoryService.append(request.conversationId(),
                 new ChatTurn("user", request.question()),
                 new ChatTurn("assistant", answer));
+    }
+
+    /** 带用户 token 的请求不参与热问题缓存（个人化回答，避免跨用户串数据）。 */
+    private boolean isCacheable(ChatRequest request) {
+        return request.token() == null || request.token().isBlank();
     }
 
     /** 流式结果：先返回引用来源，再订阅回答流。 */

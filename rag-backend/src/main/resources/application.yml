@@ -1,6 +1,10 @@
 server:
   port: 9091
 
+app:
+  # 主后端地址：用于拉取用户学习概况（个人化问答）
+  main-backend-url: ${MAIN_BACKEND_URL:http://localhost:9090}
+
 spring:
   application:
     name: rag-backend

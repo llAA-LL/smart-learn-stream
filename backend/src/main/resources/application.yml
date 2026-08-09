@@ -45,3 +45,6 @@ rate-limit:
   login-per-minute: 10
   record-per-minute: 30
   default-per-minute: 60
+
+rag-backend:
+  url: ${RAG_BACKEND_URL:http://localhost:9091}

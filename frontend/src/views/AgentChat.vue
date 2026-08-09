@@ -125,7 +125,8 @@ async function send(text) {
       body: JSON.stringify({
         conversationId: conversationId.value,
         history: history.value.slice(0, -1).slice(-16),
-        question: content
+        question: content,
+        token: localStorage.getItem('token') || ''
       })
     })
 

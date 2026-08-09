@@ -9,6 +9,7 @@ import java.util.List;
 public record ChatRequest(
         String conversationId,
         List<ChatTurn> history,
-        @NotBlank(message = "问题不能为空") String question
+        @NotBlank(message = "问题不能为空") String question,
+        String token
 ) {
 }

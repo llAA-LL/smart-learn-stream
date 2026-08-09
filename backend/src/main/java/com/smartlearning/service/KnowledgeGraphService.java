@@ -4,6 +4,7 @@ import com.smartlearning.entity.KnowledgePoint;
 import com.smartlearning.entity.KpPrerequisite;
 import com.smartlearning.exception.BusinessException;
 import com.smartlearning.mapper.KnowledgePointMapper;
+import com.smartlearning.config.RagIndexNotifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +16,13 @@ public class KnowledgeGraphService {
 
     private final KnowledgePointMapper kpMapper;
     private final CacheService cacheService;
+    private final RagIndexNotifier ragIndexNotifier;
 
-    public KnowledgeGraphService(KnowledgePointMapper kpMapper, CacheService cacheService) {
+    public KnowledgeGraphService(KnowledgePointMapper kpMapper, CacheService cacheService,
+                                 RagIndexNotifier ragIndexNotifier) {
         this.kpMapper = kpMapper;
         this.cacheService = cacheService;
+        this.ragIndexNotifier = ragIndexNotifier;
     }
 
     public List<KnowledgePoint> findByCourseId(Long courseId) {
@@ -59,6 +63,7 @@ public class KnowledgeGraphService {
             }
         }
         cacheService.evictKgCache();
+        ragIndexNotifier.notifyRebuild();
         return findById(kp.getId());
     }
 
@@ -75,6 +80,7 @@ public class KnowledgeGraphService {
             }
         }
         cacheService.evictKgCache();
+        ragIndexNotifier.notifyRebuild();
         return findById(kp.getId());
     }
 
@@ -83,6 +89,7 @@ public class KnowledgeGraphService {
         findById(id);
         kpMapper.delete(id);
         cacheService.evictKgCache();
+        ragIndexNotifier.notifyRebuild();
     }
 
     public Map<String, Object> getGraphData() {
