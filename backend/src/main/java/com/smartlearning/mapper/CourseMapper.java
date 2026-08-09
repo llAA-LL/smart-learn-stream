@@ -10,6 +10,12 @@ public interface CourseMapper {
     @Select("SELECT * FROM courses ORDER BY created_at DESC")
     List<Course> findAll();
 
+    @Select("SELECT COUNT(*) FROM courses")
+    int countAll();
+
+    @Select("SELECT * FROM courses ORDER BY created_at DESC LIMIT #{offset}, #{limit}")
+    List<Course> findPage(@Param("offset") int offset, @Param("limit") int limit);
+
     @Select("SELECT * FROM courses WHERE id = #{id}")
     Course findById(Long id);
 

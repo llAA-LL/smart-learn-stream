@@ -112,4 +112,9 @@ public class RecommendationService {
         log.setClicked(false);
         logMapper.insert(log);
     }
+
+    /** 用户点击推荐：把对应推荐记录标记为已点击，形成"浏览→点击"闭环。 */
+    public void markClicked(Long userId, Long kpId) {
+        logMapper.markClicked(userId, kpId);
+    }
 }

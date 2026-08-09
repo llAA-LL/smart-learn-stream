@@ -12,6 +12,12 @@ public interface LearningRecordMapper {
     @Select("SELECT lr.*, c.name as course_name, kp.name as kp_name FROM learning_records lr LEFT JOIN courses c ON lr.course_id = c.id LEFT JOIN knowledge_points kp ON lr.kp_id = kp.id WHERE lr.user_id = #{userId} ORDER BY lr.created_at DESC")
     List<LearningRecord> findByUserId(Long userId);
 
+    @Select("SELECT COUNT(*) FROM learning_records WHERE user_id = #{userId}")
+    int countByUserId(Long userId);
+
+    @Select("SELECT lr.*, c.name as course_name, kp.name as kp_name FROM learning_records lr LEFT JOIN courses c ON lr.course_id = c.id LEFT JOIN knowledge_points kp ON lr.kp_id = kp.id WHERE lr.user_id = #{userId} ORDER BY lr.created_at DESC LIMIT #{offset}, #{limit}")
+    List<LearningRecord> findPageByUserId(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
     @Select("SELECT lr.*, c.name as course_name, kp.name as kp_name FROM learning_records lr LEFT JOIN courses c ON lr.course_id = c.id LEFT JOIN knowledge_points kp ON lr.kp_id = kp.id WHERE lr.user_id = #{userId} AND lr.record_date BETWEEN #{start} AND #{end} ORDER BY lr.record_date")
     List<LearningRecord> findByUserAndDateRange(@Param("userId") Long userId, @Param("start") LocalDate start, @Param("end") LocalDate end);
 

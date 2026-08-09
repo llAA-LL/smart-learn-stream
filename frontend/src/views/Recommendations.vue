@@ -15,6 +15,7 @@
         </div>
         <router-link v-for="(rec, idx) in recommendations" :key="rec.kpId"
              :to="`/knowledge-point/${rec.kpId}`"
+             @click="reportClick(rec)"
              class="rec-card" :style="{ animationDelay: idx * 0.05 + 's' }">
           <div class="rec-left" :class="'border-' + rec.type?.toLowerCase()"></div>
           <div class="rec-body">
@@ -64,6 +65,9 @@ const recommendations = ref([]); const weakPoints = ref([])
 async function load() {
   const [r, w] = await Promise.all([recApi.recommend(), recApi.weakPoints()])
   recommendations.value = r.data.data; weakPoints.value = w.data.data
+}
+function reportClick(rec) {
+  recApi.click({ kpId: rec.kpId }).catch(() => {})
 }
 onMounted(load)
 </script>

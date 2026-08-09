@@ -32,6 +32,11 @@
       </div>
     </div>
 
+    <div v-if="total > pageSize" class="pagination-wrap">
+      <el-pagination background layout="prev, pager, next, total" :total="total"
+                     :page-size="pageSize" :current-page="page" @current-change="onPageChange" />
+    </div>
+
     <!-- Admin: Create/Edit dialog -->
     <el-dialog :modelValue="showDialog" @update:modelValue="showDialog = $event"
                :title="editing ? '编辑课程' : '添加课程'" width="480px" center>
@@ -111,14 +116,22 @@ const userStore = useUserStore()
 const isAdmin = computed(() => userStore.user?.role === 'ADMIN')
 
 const courses = ref([])
+const page = ref(1)
+const pageSize = ref(12)
+const total = ref(0)
 const showDialog = ref(false)
 const editing = ref(false)
 const editingId = ref(null)
 const form = reactive({ name: '', category: '', description: '' })
 
 async function load() {
-  const res = await courseApi.list()
-  courses.value = res.data.data
+  const res = await courseApi.list({ page: page.value, pageSize: pageSize.value })
+  courses.value = res.data.data.list
+  total.value = res.data.data.total
+}
+function onPageChange(p) {
+  page.value = p
+  load()
 }
 function openCreate() {
   editing.value = false; editingId.value = null
@@ -197,6 +210,7 @@ onMounted(load)
 
 <style scoped>
 .page { max-width: 1200px; margin: 0 auto; }
+.pagination-wrap { display: flex; justify-content: center; margin-top: 16px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
 

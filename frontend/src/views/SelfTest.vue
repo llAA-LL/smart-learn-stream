@@ -144,6 +144,11 @@
         </el-table-column>
         <el-table-column prop="completedAt" label="时间" width="170" align="center" />
       </el-table>
+      <div v-if="historyTotal > historyPageSize" class="pagination-wrap">
+        <el-pagination background layout="prev, pager, next, total" :total="historyTotal"
+                       :page-size="historyPageSize" :current-page="historyPage"
+                       @current-change="onHistoryPageChange" />
+      </div>
     </div>
   </div>
 </template>
@@ -162,6 +167,9 @@ const selectedKp = ref(null)
 const generating = ref(false)
 const submitting = ref(false)
 const history = ref([])
+const historyPage = ref(1)
+const historyPageSize = ref(10)
+const historyTotal = ref(0)
 
 const step = ref('select')  // select | loading | quiz | result
 const questions = ref([])
@@ -204,11 +212,18 @@ function onCourseChange() {
 async function loadData() {
   const [c, k, h] = await Promise.all([
     courseApi.list(), kgApi.listNodes(),
-    quizApi.history().catch(() => ({ data: { data: [] } }))
+    quizApi.history({ page: historyPage.value, pageSize: historyPageSize.value })
+      .catch(() => ({ data: { data: { list: [], total: 0 } } }))
   ])
   courses.value = c.data.data
   kps.value = k.data.data
-  history.value = h.data.data || []
+  history.value = h.data.data.list || []
+  historyTotal.value = h.data.data.total || 0
+
+  function onHistoryPageChange(p) {
+    historyPage.value = p
+    loadData()
+  }
 
   // Handle query params: pre-select course and KP from detail page
   const qKpId = route.query.kpId

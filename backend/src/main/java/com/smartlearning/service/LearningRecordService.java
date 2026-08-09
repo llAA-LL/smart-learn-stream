@@ -2,6 +2,7 @@ package com.smartlearning.service;
 
 import com.smartlearning.entity.LearningRecord;
 import com.smartlearning.entity.UserKpMastery;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.mapper.LearningRecordMapper;
 import com.smartlearning.mapper.UserKpMasteryMapper;
 import com.smartlearning.util.DistributedLock;
@@ -97,8 +98,9 @@ public class LearningRecordService {
         return record;
     }
 
-    public List<LearningRecord> getUserRecords(Long userId) {
-        return recordMapper.findByUserId(userId);
+    public PagedResult<LearningRecord> getUserRecords(Long userId, int page, int pageSize) {
+        List<LearningRecord> list = recordMapper.findPageByUserId(userId, (page - 1) * pageSize, pageSize);
+        return new PagedResult<>(list, recordMapper.countByUserId(userId), page, pageSize);
     }
 
     /**

@@ -1,9 +1,11 @@
 package com.smartlearning.controller;
 
 import com.smartlearning.dto.ApiResponse;
+import com.smartlearning.dto.RecommendationClickRequest;
 import com.smartlearning.entity.UserKpMastery;
 import com.smartlearning.service.RecommendationService;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
@@ -28,5 +30,12 @@ public class RecommendationController {
     @GetMapping("/weak-points")
     public ApiResponse<List<UserKpMastery>> weakPoints(@RequestAttribute("userId") Long userId) {
         return ApiResponse.ok(recommendationService.getWeakPoints(userId));
+    }
+
+    @PostMapping("/click")
+    public ApiResponse<?> click(@RequestAttribute("userId") Long userId,
+                                @Valid @RequestBody RecommendationClickRequest request) {
+        recommendationService.markClicked(userId, request.getKpId());
+        return ApiResponse.ok();
     }
 }

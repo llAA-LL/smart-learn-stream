@@ -1,6 +1,7 @@
 package com.smartlearning.controller;
 
 import com.smartlearning.dto.ApiResponse;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.entity.Course;
 import com.smartlearning.service.CourseService;
 import com.smartlearning.annotation.RequireRole;
@@ -19,8 +20,10 @@ public class CourseController {
     }
 
     @GetMapping
-    public ApiResponse<List<Course>> list() {
-        return ApiResponse.ok(courseService.findAll());
+    public ApiResponse<PagedResult<Course>> list(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        return ApiResponse.ok(courseService.page(Math.max(page, 1), Math.min(pageSize, 100)));
     }
 
     @GetMapping("/{id}")

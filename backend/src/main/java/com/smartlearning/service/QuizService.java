@@ -2,6 +2,7 @@ package com.smartlearning.service;
 
 import com.smartlearning.dto.QuizSubmitRequest;
 import com.smartlearning.entity.*;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.exception.BusinessException;
 import com.smartlearning.mapper.*;
 import com.smartlearning.util.DistributedLock;
@@ -163,8 +164,9 @@ public class QuizService {
         }
     }
 
-    public List<QuizAttempt> getUserHistory(Long userId) {
-        return quizMapper.findByUserId(userId);
+    public PagedResult<QuizAttempt> getUserHistory(Long userId, int page, int pageSize) {
+        List<QuizAttempt> list = quizMapper.findPageByUserId(userId, (page - 1) * pageSize, pageSize);
+        return new PagedResult<>(list, quizMapper.countByUserId(userId), page, pageSize);
     }
 
     public QuizAttempt getAttemptDetail(Long userId, Long attemptId) {

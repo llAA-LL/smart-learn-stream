@@ -19,6 +19,12 @@ public interface QuizMapper {
     @Select("SELECT qa.*, kp.name as kp_name FROM quiz_attempts qa LEFT JOIN knowledge_points kp ON qa.kp_id = kp.id WHERE qa.user_id = #{userId} ORDER BY qa.completed_at DESC")
     List<QuizAttempt> findByUserId(Long userId);
 
+    @Select("SELECT COUNT(*) FROM quiz_attempts WHERE user_id = #{userId}")
+    int countByUserId(Long userId);
+
+    @Select("SELECT qa.*, kp.name as kp_name FROM quiz_attempts qa LEFT JOIN knowledge_points kp ON qa.kp_id = kp.id WHERE qa.user_id = #{userId} ORDER BY qa.completed_at DESC LIMIT #{offset}, #{limit}")
+    List<QuizAttempt> findPageByUserId(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
     @Select("SELECT qa.*, kp.name as kp_name FROM quiz_attempts qa LEFT JOIN knowledge_points kp ON qa.kp_id = kp.id WHERE qa.user_id = #{userId} AND qa.kp_id = #{kpId} ORDER BY qa.completed_at DESC")
     List<QuizAttempt> findByUserAndKp(@Param("userId") Long userId, @Param("kpId") Long kpId);
 

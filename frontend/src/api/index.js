@@ -37,7 +37,7 @@ export const authApi = {
 
 // Courses
 export const courseApi = {
-  list: () => api.get('/courses'),
+  list: (params) => api.get('/courses', { params }),
   get: (id) => api.get(`/courses/${id}`),
   create: (data) => api.post('/courses', data),
   update: (id, data) => api.put(`/courses/${id}`, data),
@@ -67,7 +67,7 @@ export const planApi = {
 // Learning Records
 export const recordApi = {
   create: (data) => api.post('/records', data),
-  list: () => api.get('/records'),
+  list: (params) => api.get('/records', { params }),
   stats: () => api.get('/records/stats'),
   mastery: () => api.get('/records/mastery')
 }
@@ -76,13 +76,13 @@ export const recordApi = {
 export const quizApi = {
   generate: (kpId) => api.get('/quiz/generate', { params: { kpId } }),
   submit: (data) => api.post('/quiz/submit', data),
-  history: () => api.get('/quiz/history'),
+  history: (params) => api.get('/quiz/history', { params }),
   getAttempt: (id) => api.get(`/quiz/attempts/${id}`)
 }
 
 // Questions (admin)
 export const questionApi = {
-  list: (kpId) => api.get('/questions' + (kpId ? `?kpId=${kpId}` : '')),
+  list: (params) => api.get('/questions', { params }),
   get: (id) => api.get(`/questions/${id}`),
   create: (data) => api.post('/questions', data),
   update: (id, data) => api.put(`/questions/${id}`, data),
@@ -92,7 +92,8 @@ export const questionApi = {
 // Recommendations
 export const recApi = {
   recommend: () => api.get('/recommendations'),
-  weakPoints: () => api.get('/recommendations/weak-points')
+  weakPoints: () => api.get('/recommendations/weak-points'),
+  click: (data) => api.post('/recommendations/click', data)
 }
 
 export default api

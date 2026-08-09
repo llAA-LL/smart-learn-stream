@@ -2,6 +2,7 @@ package com.smartlearning.controller;
 
 import com.smartlearning.annotation.RateLimit;
 import com.smartlearning.dto.ApiResponse;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.entity.LearningRecord;
 import com.smartlearning.entity.UserKpMastery;
 import com.smartlearning.service.LearningRecordService;
@@ -28,8 +29,10 @@ public class LearningRecordController {
     }
 
     @GetMapping
-    public ApiResponse<List<LearningRecord>> list(@RequestAttribute("userId") Long userId) {
-        return ApiResponse.ok(recordService.getUserRecords(userId));
+    public ApiResponse<PagedResult<LearningRecord>> list(@RequestAttribute("userId") Long userId,
+                                                         @RequestParam(defaultValue = "1") int page,
+                                                         @RequestParam(defaultValue = "20") int pageSize) {
+        return ApiResponse.ok(recordService.getUserRecords(userId, Math.max(page, 1), Math.min(pageSize, 100)));
     }
 
     @GetMapping("/stats")

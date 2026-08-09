@@ -1,6 +1,7 @@
 package com.smartlearning.controller;
 
 import com.smartlearning.dto.ApiResponse;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.entity.Question;
 import com.smartlearning.mapper.QuestionMapper;
 import com.smartlearning.annotation.RequireRole;
@@ -20,11 +21,19 @@ public class QuestionController {
 
     @GetMapping
     @RequireRole("ADMIN")
-    public ApiResponse<List<Question>> list(@RequestParam(required = false) Long kpId) {
+    public ApiResponse<PagedResult<Question>> list(@RequestParam(required = false) Long kpId,
+                                                   @RequestParam(defaultValue = "1") int page,
+                                                   @RequestParam(defaultValue = "20") int pageSize) {
+        int size = Math.min(pageSize, 100);
+        int offset = (Math.max(page, 1) - 1) * size;
         if (kpId != null) {
-            return ApiResponse.ok(questionMapper.findByKpId(kpId));
+            return ApiResponse.ok(new PagedResult<>(
+                    questionMapper.findPageByKp(kpId, offset, size),
+                    questionMapper.countByKpId(kpId), Math.max(page, 1), size));
         }
-        return ApiResponse.ok(questionMapper.findAll());
+        return ApiResponse.ok(new PagedResult<>(
+                questionMapper.findPageAll(offset, size),
+                questionMapper.countAll(), Math.max(page, 1), size));
     }
 
     @GetMapping("/{id}")

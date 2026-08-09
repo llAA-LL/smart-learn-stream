@@ -1,6 +1,7 @@
 package com.smartlearning.service;
 
 import com.smartlearning.entity.Course;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.exception.BusinessException;
 import com.smartlearning.mapper.CourseMapper;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,11 @@ public class CourseService {
 
     public List<Course> findAll() {
         return cacheService.getOrLoadCourseList(courseMapper::findAll);
+    }
+
+    public PagedResult<Course> page(int page, int pageSize) {
+        List<Course> list = courseMapper.findPage((page - 1) * pageSize, pageSize);
+        return new PagedResult<>(list, courseMapper.countAll(), page, pageSize);
     }
 
     public Course findById(Long id) {

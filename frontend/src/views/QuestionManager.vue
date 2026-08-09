@@ -43,6 +43,10 @@
           </template>
         </el-table-column>
       </el-table>
+      <div v-if="total > pageSize" class="pagination-wrap">
+        <el-pagination background layout="prev, pager, next, total" :total="total"
+                       :page-size="pageSize" :current-page="page" @current-change="onPageChange" />
+      </div>
     </div>
 
     <!-- Add/Edit dialog -->
@@ -96,6 +100,9 @@ const questions = ref([])
 const courses = ref([])
 const kps = ref([])
 const loading = ref(false)
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 const showDialog = ref(false)
 const editing = ref(false)
 const editingId = ref(null)
@@ -118,18 +125,24 @@ function onCourseChange() {
 }
 
 async function loadAll() {
-  const [c, k] = await Promise.all([courseApi.list(), kgApi.listNodes()])
-  courses.value = c.data.data; kps.value = k.data.data
+  const [c, k] = await Promise.all([courseApi.list({ page: 1, pageSize: 999 }), kgApi.listNodes()])
+  courses.value = c.data.data.list; kps.value = k.data.data
   loadQuestions()
 }
 
 async function loadQuestions() {
   loading.value = true
   try {
-    const res = await questionApi.list(filterKp.value || undefined)
-    questions.value = res.data.data || []
+    const res = await questionApi.list({ page: page.value, pageSize: pageSize.value, kpId: filterKp.value || undefined })
+    questions.value = res.data.data.list || []
+    total.value = res.data.data.total || 0
   } catch { questions.value = [] }
   loading.value = false
+}
+
+function onPageChange(p) {
+  page.value = p
+  loadQuestions()
 }
 
 function openCreate() {

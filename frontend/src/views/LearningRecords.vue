@@ -44,6 +44,10 @@
         </el-table-column>
         <el-table-column prop="notes" label="笔记" show-overflow-tooltip />
       </el-table>
+      <div v-if="total > pageSize" class="pagination-wrap">
+        <el-pagination background layout="prev, pager, next, total" :total="total"
+                       :page-size="pageSize" :current-page="page" @current-change="onPageChange" />
+      </div>
     </div>
 
     <!-- Add dialog -->
@@ -94,6 +98,9 @@ import dayjs from 'dayjs'
 
 const records = ref([]); const mastery = ref([])
 const courses = ref([]); const kps = ref([])
+const page = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
 const loading = ref(false); const showDialog = ref(false)
 const form = reactive({ courseId: null, kpId: null, durationMinutes: 30, masteryLevel: 50, recordDate: new Date(), notes: '' })
 const filteredKps = computed(() => {
@@ -102,8 +109,17 @@ const filteredKps = computed(() => {
 })
 
 async function load() {
-  const [r, m, c, k] = await Promise.all([recordApi.list(), recordApi.mastery(), courseApi.list(), kgApi.listNodes()])
-  records.value = r.data.data; mastery.value = m.data.data; courses.value = c.data.data; kps.value = k.data.data
+  const [r, m, c, k] = await Promise.all([
+    recordApi.list({ page: page.value, pageSize: pageSize.value }),
+    recordApi.mastery(), courseApi.list({ page: 1, pageSize: 999 }), kgApi.listNodes()
+  ])
+  records.value = r.data.data.list; mastery.value = m.data.data
+  courses.value = c.data.data.list; kps.value = k.data.data
+  total.value = r.data.data.total
+}
+function onPageChange(p) {
+  page.value = p
+  load()
 }
 async function handleSave() {
   const data = { ...form, recordDate: dayjs(form.recordDate).format('YYYY-MM-DD') }

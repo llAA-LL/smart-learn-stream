@@ -22,6 +22,15 @@ public interface QuestionMapper {
     @Select("SELECT COUNT(*) FROM questions WHERE kp_id = #{kpId}")
     int countByKpId(Long kpId);
 
+    @Select("SELECT COUNT(*) FROM questions")
+    int countAll();
+
+    @Select("SELECT q.*, kp.name as kp_name, c.name as course_name FROM questions q LEFT JOIN knowledge_points kp ON q.kp_id = kp.id LEFT JOIN courses c ON kp.course_id = c.id ORDER BY q.kp_id, q.id LIMIT #{offset}, #{limit}")
+    List<Question> findPageAll(@Param("offset") int offset, @Param("limit") int limit);
+
+    @Select("SELECT q.*, kp.name as kp_name, c.name as course_name FROM questions q LEFT JOIN knowledge_points kp ON q.kp_id = kp.id LEFT JOIN courses c ON kp.course_id = c.id WHERE q.kp_id = #{kpId} ORDER BY q.difficulty, q.id LIMIT #{offset}, #{limit}")
+    List<Question> findPageByKp(@Param("kpId") Long kpId, @Param("offset") int offset, @Param("limit") int limit);
+
     @Insert("INSERT INTO questions (kp_id, question_type, content, options, answer, explanation, difficulty) VALUES (#{kpId}, #{questionType}, #{content}, #{options}, #{answer}, #{explanation}, #{difficulty})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Question question);

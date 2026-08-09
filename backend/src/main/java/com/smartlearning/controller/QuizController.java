@@ -1,6 +1,7 @@
 package com.smartlearning.controller;
 
 import com.smartlearning.dto.ApiResponse;
+import com.smartlearning.dto.PagedResult;
 import com.smartlearning.dto.QuizSubmitRequest;
 import com.smartlearning.entity.Question;
 import com.smartlearning.entity.QuizAttempt;
@@ -32,8 +33,10 @@ public class QuizController {
     }
 
     @GetMapping("/history")
-    public ApiResponse<List<QuizAttempt>> history(@RequestAttribute("userId") Long userId) {
-        return ApiResponse.ok(quizService.getUserHistory(userId));
+    public ApiResponse<PagedResult<QuizAttempt>> history(@RequestAttribute("userId") Long userId,
+                                                         @RequestParam(defaultValue = "1") int page,
+                                                         @RequestParam(defaultValue = "20") int pageSize) {
+        return ApiResponse.ok(quizService.getUserHistory(userId, Math.max(page, 1), Math.min(pageSize, 100)));
     }
 
     @GetMapping("/attempts/{id}")
