@@ -1,0 +1,20 @@
+Time: 22.0s | Reply: 1470 chars | Sources: 5
+
+Java的面向对象编程（OOP）有三大核心特性：**封装、继承、多态**。此外，**抽象**也是OOP的重要概念，通常与这三大特性并称为四大特性。以下是对它们的详细解释：
+
+### 1. 封装 (Encapsulation) [1][2]
+
+- **概念**：将对象的数据（属性）和操作数据的方法（行为）绑定在一起，并对外部隐藏内部实现细节，仅暴露必要的访问接口。
+- **设计规范**：**合理隐藏，合理暴露** [2]。
+- **实现方式**：使用 `private` 关键字隐藏成员变量，通过 `public` 的 `getter/setter` 方法控制外部访问，可在方法内进行数据校验或逻辑控制 [1]。
+- **代码示例**：
+  ```java
+  public class Student {
+      private String name;  // 私有字段，隐藏数据
+      public String getName() { return name; } // 公开 getter
+      public void setName(String name) { 
+          if (name != null) this.name = name; // 暴露的 setter 带数据校验
+      }
+  }
+  ```
+- **优点**：提高代码的安全性、

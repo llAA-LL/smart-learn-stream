@@ -1,0 +1,142 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sl-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: smart_learning
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - sl-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: sl-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - sl-network
+
+  backend:
+    build: ./backend
+    container_name: sl-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/smart_learning?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATA_REDIS_HOST: redis
+      LOG_PATH: /app/logs
+    ports:
+      - "9090:9090"
+    volumes:
+      - backend_logs:/app/logs
+    networks:
+      - sl-network
+    restart: unless-stopped
+
+  agent:
+    build: ./agent
+    container_name: sl-agent
+    depends_on:
+      - backend
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-BAAI/bge-small-zh-v1.5}
+      RERANKER_MODEL: ${RERANKER_MODEL:-BAAI/bge-reranker-base}
+      JAVA_BACKEND_URL: http://backend:9090/api
+      CHROMA_PERSIST_DIR: /app/data/chroma
+      BM25_PERSIST_DIR: /app/data/bm25
+      DENSE_TOP_K: ${DENSE_TOP_K:-20}
+      SPARSE_TOP_K: ${SPARSE_TOP_K:-20}
+      RERANK_TOP_K: ${RERANK_TOP_K:-6}
+      ENABLE_SAFETY_CHECK: ${ENABLE_SAFETY_CHECK:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "5001:5001"
+    volumes:
+      - chroma_data:/app/data/chroma
+    networks:
+      - sl-network
+    restart: unless-stopped
+
+  chroma:
+    image: ghcr.io/chroma-core/chroma:1.0.0
+    container_name: sl-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - rag_chroma_data:/data
+    networks:
+      - sl-network
+    restart: unless-stopped
+
+  rag-backend:
+    build: ./rag-backend
+    container_name: sl-rag-backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+      chroma:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/smart_learning?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      SILICONFLOW_API_KEY: ${SILICONFLOW_API_KEY}
+      RAG_EMBEDDING_PROVIDER: openai-api
+      SPRING_AI_VECTORSTORE_CHROMA_CLIENT_HOST: chroma
+    ports:
+      - "9091:9091"
+    networks:
+      - sl-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: sl-frontend
+    depends_on:
+      - backend
+      - agent
+      - rag-backend
+    ports:
+      - "80:80"
+    networks:
+      - sl-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+  backend_logs:
+  chroma_data:
+  rag_chroma_data:
+
+networks:
+  sl-network:
+    driver: bridge

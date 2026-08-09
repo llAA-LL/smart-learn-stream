@@ -1,0 +1,89 @@
+server:
+  port: 9091
+
+spring:
+  application:
+    name: rag-backend
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/smart_learning?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/init-rag.sql
+      data-locations: []
+      continue-on-error: true
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 3s
+
+  ai:
+    openai:
+      # DeepSeek 提供 OpenAI 兼容接口
+      base-url: https://api.deepseek.com
+      api-key: ${DEEPSEEK_API_KEY:sk-placeholder}
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 0.3
+      # SiliconFlow 提供 OpenAI 兼容 Embedding 接口（bge-m3）
+      embedding:
+        base-url: https://api.siliconflow.cn
+        api-key: ${SILICONFLOW_API_KEY:sk-placeholder}
+        options:
+          model: BAAI/bge-m3
+
+    vectorstore:
+      chroma:
+        client:
+          host: localhost
+          port: 8000
+        collection-name: smart_learning_kp
+        initialize-schema: true
+
+rag:
+  memory:
+    enabled: true
+    # 服务端会话记忆：最多保留多少轮（不含当前轮）
+    max-turns: 10
+  cache:
+    enabled: true
+    # 热问题回答缓存 TTL（秒）：独立问题（无历史上下文）重复提问直接命中
+    ttl-seconds: 86400
+  embedding:
+    # local-python: 复用本机 Python 本地模型（默认，零注册零成本）
+    # openai-api : 使用 SiliconFlow bge-m3 API（需配置 SILICONFLOW_API_KEY）
+    provider: local-python
+    local-python-url: http://127.0.0.1:5003
+  retrieval:
+    # 稠密（向量）检索 TopK
+    dense-top-k: 10
+    # 稀疏（MySQL 全文）检索 TopK
+    sparse-top-k: 10
+    # 融合后最终保留的候选数
+    # 8：评测实测 Top-5 会漏掉并列名次的正确结果，8 更能兜住边界情况
+    rerank-top-k: 8
+  rerank:
+    enabled: true
+    # 重排时每个候选片段截断的字符数，控制成本
+    max-chars: 600
+    # 重排实现：llm（DeepSeek 打分，hit@1 更高，默认） | local（bge-reranker-base，零外部依赖）
+    # 实测对比：llm hit@1=87.5%，local hit@1=80%（hit@5 相同）；local 延迟约 600ms vs llm 约 800ms
+    provider: llm
+    local-url: http://127.0.0.1:5003
+  index:
+    # 分块大小（字符）与重叠窗口（字符）
+    chunk-size: 800
+    chunk-overlap: 80
+    batch-size: 32
+
+logging:
+  level:
+    com.smartlearning.rag: INFO

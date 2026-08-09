@@ -1,0 +1,40 @@
+# rag-backend 独立部署（向量化使用 SiliconFlow API，无需本地 Python 服务）
+# 使用前先配置 .env：DEEPSEEK_API_KEY、SILICONFLOW_API_KEY
+services:
+  rag-backend:
+    build: .
+    container_name: rag-backend
+    depends_on:
+      - chroma
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:mysql://host.docker.internal:3306/smart_learning?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-123456}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      SILICONFLOW_API_KEY: ${SILICONFLOW_API_KEY}
+      # 容器内走 API 向量化；本地开发用 local-python
+      RAG_EMBEDDING_PROVIDER: openai-api
+      SPRING_AI_VECTORSTORE_CHROMA_CLIENT_HOST: chroma
+    ports:
+      - "9091:9091"
+    networks:
+      - rag-net
+    restart: unless-stopped
+
+  chroma:
+    image: ghcr.io/chroma-core/chroma:1.0.0
+    container_name: rag-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - rag_chroma_data:/data
+    networks:
+      - rag-net
+    restart: unless-stopped
+
+volumes:
+  rag_chroma_data:
+
+networks:
+  rag-net:
+    driver: bridge

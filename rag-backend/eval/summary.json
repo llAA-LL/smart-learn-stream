@@ -1,0 +1,42 @@
+{
+    "retrieval":  {
+                      "dense":  {
+                                    "hit1":  22,
+                                    "hit5":  38,
+                                    "hit1_rate":  55,
+                                    "hit5_rate":  95
+                                },
+                      "rag_generation":  {
+                                             "hit5_rate":  97.5,
+                                             "hit5":  39
+                                         },
+                      "hybrid_rerank":  {
+                                            "hit1":  35,
+                                            "hit5":  39,
+                                            "hit1_rate":  87.5,
+                                            "hit5_rate":  97.5
+                                        },
+                      "sparse":  {
+                                     "hit1":  35,
+                                     "hit5":  40,
+                                     "hit1_rate":  87.5,
+                                     "hit5_rate":  100
+                                 },
+                      "hybrid":  {
+                                     "hit1":  26,
+                                     "hit5":  39,
+                                     "hit1_rate":  65,
+                                     "hit5_rate":  97.5
+                                 }
+                  },
+    "answers":  {
+                    "bare_avg":  8.8,
+                    "rag_avg":  6.82,
+                    "scored_count":  40,
+                    "rag_tie":  4,
+                    "rag_better":  1,
+                    "rag_citation_rate":  100,
+                    "rag_worse":  35
+                },
+    "total":  40
+}

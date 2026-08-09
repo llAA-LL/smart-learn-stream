@@ -1,0 +1,36 @@
+# ---- Java ----
+target/
+*.class
+*.jar
+!.mvn/wrapper/*.jar
+
+# ---- Node ----
+node_modules/
+dist/
+npm-debug.log*
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ---- IDE ----
+.idea/
+*.iml
+.vscode/
+
+# ---- 密钥与环境变量（重要：不得提交） ----
+.env
+*.local
+
+# ---- 数据与日志 ----
+data/
+logs/
+*.log
+*.log.*
+dump.rdb
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
