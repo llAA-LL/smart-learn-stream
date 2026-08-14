@@ -40,23 +40,24 @@ class LlmRerankServiceTest {
     }
 
     @Test
-    void rerankReordersByLlmScores() throws Exception {
+    void rerankReordersByLlmScoresAndCarriesScores() throws Exception {
         List<RankedChunk> candidates = List.of(chunk(1L, "A"), chunk(2L, "B"), chunk(3L, "C"));
         when(chatModel.call(any(Prompt.class))).thenReturn(response("{\"scores\": [9, 2, 5]}"));
 
         List<RankedChunk> result = service(true).rerank("question", candidates);
 
-        assertThat(result).extracting(RankedChunk::kpId).containsExactly(1L, 3L, 2L);
+        assertThat(result).extracting(RankedChunk::kpId).containsExactly(1L, 3L);
+        assertThat(result).extracting(RankedChunk::score).containsExactly(9.0, 5.0);
     }
 
     @Test
-    void rerankParsesScoresInsideMarkdownCodeBlock() throws Exception {
+    void rerankFiltersLowScoresInsideMarkdownCodeBlock() throws Exception {
         List<RankedChunk> candidates = List.of(chunk(1L, "A"), chunk(2L, "B"));
         when(chatModel.call(any(Prompt.class))).thenReturn(response("```json\n{\"scores\": [3, 8]}\n```"));
 
         List<RankedChunk> result = service(true).rerank("question", candidates);
 
-        assertThat(result).extracting(RankedChunk::kpId).containsExactly(2L, 1L);
+        assertThat(result).extracting(RankedChunk::kpId).containsExactly(2L);
     }
 
     @Test

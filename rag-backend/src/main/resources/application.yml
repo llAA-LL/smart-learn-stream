@@ -78,6 +78,8 @@ rag:
     enabled: true
     # 重排时每个候选片段截断的字符数，控制成本
     max-chars: 600
+    # 重排后最低保留分（0-10）：低于该分数视为无关片段，不进上下文/引用
+    min-score: 4
     # 重排实现：llm（DeepSeek 打分，hit@1 更高，默认） | local（bge-reranker-base，零外部依赖）
     # 实测对比：llm hit@1=87.5%，local hit@1=80%（hit@5 相同）；local 延迟约 600ms vs llm 约 800ms
     provider: llm

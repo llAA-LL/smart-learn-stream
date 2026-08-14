@@ -67,6 +67,12 @@ public class RagProperties {
     public static class Rerank {
         private boolean enabled = true;
         private int maxChars = 600;
+        /**
+         * LLM 重排后的最低保留分（0-10）。
+         * 打分标准与 rerank-prompt 一致：6-8 相关、3-5 泛泛背景、0-2 无关。
+         * 低于该分数的片段会被过滤，避免把无关知识点塞进上下文和引用列表。
+         */
+        private int minScore = 4;
 
         public boolean isEnabled() {
             return enabled;
@@ -82,6 +88,14 @@ public class RagProperties {
 
         public void setMaxChars(int maxChars) {
             this.maxChars = maxChars;
+        }
+
+        public int getMinScore() {
+            return minScore;
+        }
+
+        public void setMinScore(int minScore) {
+            this.minScore = minScore;
         }
     }
 

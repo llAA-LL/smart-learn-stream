@@ -60,7 +60,12 @@ public class LlmRerankService implements Reranker {
                 scored.add(new ScoredCandidate(candidates.get(i), scores.get(i)));
             }
             scored.sort(Comparator.comparingInt(ScoredCandidate::score).reversed());
-            return scored.stream().map(ScoredCandidate::chunk).toList();
+            int minScore = props.getRerank().getMinScore();
+            return scored.stream()
+                    .filter(s -> s.score() >= minScore)
+                    .map(s -> new RankedChunk(s.chunk().kpId(), s.chunk().kpName(),
+                            s.chunk().content(), s.score(), s.chunk().sources()))
+                    .toList();
         } catch (Exception e) {
             log.warn("LLM 重排失败，回退到 RRF 顺序: {}", e.getMessage());
             return candidates;
