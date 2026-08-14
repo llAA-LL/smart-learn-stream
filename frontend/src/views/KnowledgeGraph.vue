@@ -111,7 +111,7 @@ const pan = reactive({ x: 0, y: 0 })
 const NODE_W = 110
 const NODE_H = 40
 const PAD = 90
-const LEVEL_COLORS = ['#34d399', '#60a5fa', '#fbbf24', '#f87171', '#c084fc']
+const LEVEL_COLORS = ['#0d9488', '#4f46e5', '#d97706', '#e11d48', '#7c3aed']
 
 const showDialog = ref(false)
 const editing = ref(false)
@@ -358,20 +358,20 @@ onMounted(async () => {
 
 <style scoped>
 .page { max-width: 1400px; margin: 0 auto; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
-.header-actions { display: flex; gap: 12px; align-items: center; }
-.graph-stats { font-size: 13px; color: #8892a6; margin-right: 4px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+.header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.graph-stats { font-size: 13px; color: var(--text-3); margin-right: 4px; }
 
 .graph-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   padding: 24px;
 }
 .graph-hint {
   font-size: 12px;
-  color: #9aa3b8;
+  color: var(--text-3);
   margin-bottom: 12px;
   text-align: center;
 }
@@ -382,23 +382,23 @@ onMounted(async () => {
   overflow: hidden;
   cursor: grab;
   background:
-    radial-gradient(circle, #e7ebf4 1px, transparent 1px),
-    linear-gradient(180deg, #f7f9fd 0%, #eef2f9 100%);
+    radial-gradient(circle, rgba(15, 23, 42, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   background-size: 24px 24px, 100% 100%;
   border-radius: 12px;
-  border: 1px solid #eef1f7;
+  border: 1px solid var(--border);
   user-select: none;
 }
 .graph-viewport:active { cursor: grabbing; }
 .graph-world { position: absolute; top: 0; left: 0; }
 .graph-edges { position: absolute; top: 0; left: 0; overflow: visible; }
 .edge {
-  stroke: #aab4cc;
+  stroke: #94a3b8;
   stroke-width: 2;
-  opacity: 0.55;
+  opacity: 0.45;
   transition: opacity .15s, stroke .15s, stroke-width .15s;
 }
-.edge.active { stroke: #5b6b8c; opacity: 1; stroke-width: 3; }
+.edge.active { stroke: var(--accent); opacity: 1; stroke-width: 3; }
 .graph-node {
   position: absolute;
   width: 110px;
@@ -410,14 +410,14 @@ onMounted(async () => {
   color: #fff;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.18);
   cursor: pointer;
   z-index: 2;
   transition: transform .15s, opacity .15s, box-shadow .15s;
 }
 .graph-node.active {
   transform: scale(1.12);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.3);
   z-index: 3;
 }
 .graph-node.dim { opacity: 0.25; }
@@ -430,6 +430,6 @@ onMounted(async () => {
   white-space: nowrap;
   max-width: 100%;
 }
-.graph-error { color: #f56c6c; font-size: 14px; text-align: center; padding: 80px 0; }
-.empty-state { text-align: center; padding: 100px 0; color: #999; font-size: 15px; }
+.graph-error { color: var(--rose); font-size: 14px; text-align: center; padding: 80px 0; }
+.empty-state { text-align: center; padding: 100px 0; color: var(--text-3); font-size: 15px; }
 </style>

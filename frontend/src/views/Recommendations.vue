@@ -10,7 +10,9 @@
       <div class="card">
         <h3 class="section-title">学习路径推荐</h3>
         <div v-if="recommendations.length === 0" class="empty-state">
-          <div class="empty-icon">🔮</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6.5l1.8 3.7 4.2.6-3 2.9.7 4.1-3.7-1.9-3.7 1.9.7-4.1-3-2.9 4.2-.6z"/></svg>
+          </div>
           <p>暂无推荐，多记录学习后系统会为你生成个性化推荐</p>
         </div>
         <router-link v-for="(rec, idx) in recommendations" :key="rec.kpId"
@@ -26,7 +28,10 @@
               <span class="rec-course" v-if="rec.courseName">{{ rec.courseName }}</span>
             </div>
             <h4 class="rec-name">{{ rec.kpName }}</h4>
-            <p class="rec-reason">💡 {{ rec.reason }}</p>
+            <p class="rec-reason">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.8.6 1.3 1.4 1.5 2.3h5c.2-.9.7-1.7 1.5-2.3A7 7 0 0 0 12 2z"/></svg>
+              {{ rec.reason }}
+            </p>
           </div>
         </router-link>
       </div>
@@ -36,7 +41,9 @@
           <el-tag type="danger" size="small" effect="plain" style="margin-left:8px">{{ weakPoints.length }} 个</el-tag>
         </h3>
         <div v-if="weakPoints.length === 0" class="empty-state">
-          <div class="empty-icon">🎉</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.1L12.9 2 2 12.9 11.1 22z"/><path d="M22 22h-8"/></svg>
+          </div>
           <p>太棒了！没有薄弱知识点</p>
         </div>
         <router-link v-for="wp in weakPoints" :key="wp.id"

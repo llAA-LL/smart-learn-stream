@@ -56,7 +56,9 @@
           <router-link to="/recommendations" class="card-link">查看全部 →</router-link>
         </div>
         <div v-if="recommendations.length === 0" class="empty-state">
-          <div class="empty-icon">📭</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          </div>
           <p>暂无推荐，先记录学习吧</p>
         </div>
         <router-link v-for="(rec, idx) in recommendations.slice(0, 5)" :key="rec.kpId"
@@ -78,7 +80,9 @@
         <router-link to="/plans" class="card-link">查看全部 →</router-link>
       </div>
       <div v-if="plans.length === 0" class="empty-state">
-        <div class="empty-icon">📋</div>
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        </div>
         <p>暂无学习计划</p>
         <el-button type="primary" size="small" @click="router.push('/plans')">创建计划</el-button>
       </div>
@@ -131,7 +135,7 @@ const { data: recommendations, run: loadRecs } = useAsyncData([])
 
 const chartRef = ref(null)
 const chart = useChart(chartRef)
-const gradientColor = ['#0f766e', '#7c3aed']
+const gradientColor = ['#0d9488', '#4f46e5']
 
 onMounted(async () => {
   try {
@@ -157,30 +161,30 @@ function renderTrendChart() {
       trigger: 'axis',
       backgroundColor: '#fff',
       borderColor: '#e8e8e8',
-      textStyle: { color: '#333' },
-      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+      textStyle: { color: '#334155' },
+      boxShadow: '0 8px 24px rgba(15,23,42,0.12)'
     },
-    grid: { left: 40, right: 20, top: 20, bottom: 20 },
+    grid: { left: 44, right: 24, top: 20, bottom: 24 },
     xAxis: {
       type: 'category', data: dailyData.map(d => d.date),
-      axisLine: { lineStyle: { color: '#e8e8e8' } },
-      axisLabel: { color: '#999', fontSize: 11 }
+      axisLine: { lineStyle: { color: 'rgba(15,23,42,0.1)' } },
+      axisLabel: { color: '#94a3b8', fontSize: 11 }
     },
     yAxis: {
       type: 'value', name: '分钟',
-      splitLine: { lineStyle: { color: '#f0f0f0' } },
-      axisLabel: { color: '#999' }
+      splitLine: { lineStyle: { color: 'rgba(15,23,42,0.06)' } },
+      axisLabel: { color: '#94a3b8' }
     },
     series: [{
       data: dailyData.map(d => d.minutes),
       type: 'line', smooth: true,
       symbol: 'circle', symbolSize: 6,
-      lineStyle: { width: 3, color: '#0f766e' },
-      itemStyle: { color: '#0f766e' },
+      lineStyle: { width: 3, color: '#0d9488' },
+      itemStyle: { color: '#0d9488' },
       areaStyle: {
         color: new graphic.LinearGradient(0, 0, 0, 1, [
-          { offset: 0, color: 'rgba(102,126,234,0.3)' },
-          { offset: 1, color: 'rgba(102,126,234,0.02)' }
+          { offset: 0, color: 'rgba(13,148,136,0.24)' },
+          { offset: 1, color: 'rgba(13,148,136,0.01)' }
         ])
       }
     }]
@@ -199,9 +203,9 @@ function renderTrendChart() {
 }
 .stat-card:nth-child(2) { animation-delay: 0.1s; }
 .stat-card:nth-child(3) { animation-delay: 0.2s; }
-.stat-today { background: linear-gradient(135deg, #0f766e, #14b8a6); }
-.stat-week { background: linear-gradient(135deg, #4338ca, #6366f1); }
-.stat-total { background: linear-gradient(135deg, #b45309, #d97706); }
+.stat-today { background: linear-gradient(135deg, #0d9488, #2dd4bf); }
+.stat-week { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+.stat-total { background: linear-gradient(135deg, #d97706, #f59e0b); }
 .stat-inner { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
 .stat-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
 .stat-body { color: #fff; }
@@ -216,8 +220,8 @@ function renderTrendChart() {
 /* Content row */
 .content-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; margin-bottom: 24px; }
 .card {
-  background: #fff; border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   animation: fadeUp 0.5s ease-out both;
 }
 .chart-card { padding: 24px; animation-delay: 0.3s; }
@@ -226,9 +230,10 @@ function renderTrendChart() {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 16px;
 }
-.card-header h3 { font-size: 16px; font-weight: 600; color: #18181b; margin: 0; }
-.card-sub { font-size: 12px; color: #999; }
-.card-link { font-size: 13px; color: #0f766e; text-decoration: none; }
+.card-header h3 { font-size: 16px; font-weight: 650; color: var(--text-1); margin: 0; letter-spacing: -0.01em; }
+.card-sub { font-size: 12px; color: var(--text-3); }
+.card-link { font-size: 13px; color: var(--accent); text-decoration: none; transition: color 0.15s ease; }
+.card-link:hover { color: var(--accent-hover); }
 .chart-container { height: 280px; }
 
 /* Recommendations */
@@ -238,35 +243,48 @@ function renderTrendChart() {
   border-radius: 10px; background: #f8f9fc;
   animation: fadeUp 0.4s ease-out both;
   text-decoration: none; cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.18s ease, transform 0.18s ease;
 }
-.rec-item:hover { background: #eef0f8; }
+.rec-item:hover { background: var(--accent-soft); transform: translateX(2px); }
 .rec-tag {
   font-size: 11px; font-weight: 600; padding: 2px 8px;
   border-radius: 6px; white-space: nowrap;
 }
-.tag-review { background: #fff0f0; color: #f56c6c; }
-.tag-next { background: #fef6e8; color: #e6a23c; }
-.tag-new { background: #e8f4fd; color: #409eff; }
-.rec-name { flex: 1; font-size: 13px; font-weight: 500; color: #333; }
-.rec-course { font-size: 11px; color: #999; }
+.tag-review { background: var(--rose-soft); color: var(--rose); }
+.tag-next { background: var(--amber-soft); color: var(--amber); }
+.tag-new { background: var(--sky-soft); color: var(--sky); }
+.rec-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text-1); }
+.rec-course { font-size: 11px; color: var(--text-3); }
 
 /* Plans */
 .plans-card { padding: 24px; margin-bottom: 24px; animation-delay: 0.5s; }
 .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .plan-card {
   padding: 20px; border-radius: 12px;
-  border: 1px solid #f0f0f0;
-  transition: all 0.3s;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-.plan-card:hover { border-color: rgba(15, 118, 110, 0.25); box-shadow: 0 4px 16px rgba(15, 118, 110, 0.08); }
+.plan-card:hover {
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
 .plan-head { display: flex; justify-content: space-between; align-items: center; }
-.plan-title { font-weight: 600; font-size: 14px; color: #18181b; }
-.plan-meta { display: flex; justify-content: space-between; font-size: 12px; color: #999; }
+.plan-title { font-weight: 600; font-size: 14px; color: var(--text-1); }
+.plan-meta { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-3); }
 
 /* Empty */
-.empty-state { text-align: center; padding: 40px 20px; color: #999; }
-.empty-icon { font-size: 40px; margin-bottom: 8px; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-3); }
+.empty-state .empty-icon {
+  width: 52px; height: 52px;
+  margin: 0 auto 12px;
+  padding: 11px;
+  border-radius: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
 .empty-state p { font-size: 14px; margin: 0; }
 
 @keyframes fadeUp {

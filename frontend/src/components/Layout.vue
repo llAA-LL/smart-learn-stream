@@ -4,8 +4,14 @@
     <el-aside width="236px" class="app-sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo">
-          <svg viewBox="0 0 40 40" fill="none" width="36" height="36">
-            <rect width="40" height="40" rx="10" fill="#0f766e"/>
+          <svg viewBox="0 0 40 40" fill="none" width="36" height="36" aria-hidden="true">
+            <defs>
+              <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40">
+                <stop offset="0%" stop-color="#0D9488"/>
+                <stop offset="100%" stop-color="#2DD4BF"/>
+              </linearGradient>
+            </defs>
+            <rect width="40" height="40" rx="11" fill="url(#logoGrad)"/>
             <path d="M12 27V13L20 18L28 13V27L20 32L12 27Z" fill="white" opacity="0.92"/>
             <path d="M12 13L20 18L28 13L20 8L12 13Z" fill="white"/>
           </svg>
@@ -68,7 +74,7 @@
 
       <div class="sidebar-footer">
         <div class="user-info">
-          <div class="avatar">{{ avatarChar }}</div>
+        <div class="avatar" aria-hidden="true">{{ avatarChar }}</div>
           <div class="user-detail">
             <div class="user-name">{{ userStore.user?.realName || userStore.user?.username }}</div>
             <div class="user-role">{{ userStore.user?.role === 'ADMIN' ? '管理员' : '学生' }}</div>
@@ -142,12 +148,12 @@ function handleLogout() {
 <style scoped>
 .app-layout { min-height: 100vh; }
 
-/* ---- 侧边栏：深色墨感 ---- */
+/* ---- 侧边栏：深墨色 + 克制的 teal/violet 光晕 ---- */
 .app-sidebar {
   background:
-    radial-gradient(420px 200px at 18% 0%, rgba(124, 58, 237, 0.16), transparent 60%),
-    radial-gradient(420px 200px at 82% 0%, rgba(15, 118, 110, 0.14), transparent 60%),
-    #0e0e10;
+    radial-gradient(460px 240px at 20% -5%, rgba(13, 148, 136, 0.18), transparent 62%),
+    radial-gradient(420px 220px at 90% 4%, rgba(124, 58, 237, 0.12), transparent 62%),
+    #0b1210;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
@@ -162,33 +168,50 @@ function handleLogout() {
   gap: 12px;
   padding: 22px 20px 18px;
 }
+.sidebar-logo {
+  filter: drop-shadow(0 2px 8px rgba(13, 148, 136, 0.35));
+}
 .sidebar-title-wrap { display: flex; flex-direction: column; }
-.sidebar-title { font-size: 17px; font-weight: 650; color: #fff; letter-spacing: 0.5px; }
-.sidebar-subtitle { font-size: 11px; color: rgba(255,255,255,0.38); margin-top: 2px; letter-spacing: 1.5px; }
+.sidebar-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.sidebar-subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.38);
+  margin-top: 2px;
+  letter-spacing: 0.18em;
+}
 
 .menu-section-label {
   font-size: 11px;
-  color: rgba(255,255,255,0.3);
-  padding: 10px 24px 6px;
-  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 12px 24px 6px;
+  letter-spacing: 0.14em;
 }
 
-.sidebar-menu { border-right: none; flex: 1; overflow-y: auto; }
+.sidebar-menu { border-right: none; flex: 1; overflow-y: auto; padding: 2px 0; }
 .sidebar-menu .el-menu-item {
   height: 42px;
   line-height: 42px;
-  margin: 1px 10px;
-  padding-left: 18px !important;
-  border-radius: 8px;
+  margin: 2px 12px;
+  padding-left: 16px !important;
+  border-radius: 10px;
   font-size: 13.5px;
-  transition: background 0.15s ease;
+  transition: background 0.16s ease, color 0.16s ease;
   gap: 10px;
 }
-.sidebar-menu .el-menu-item:hover { background: rgba(255, 255, 255, 0.05); color: #fff; }
-.sidebar-menu .el-menu-item.is-active {
-  background: rgba(255, 255, 255, 0.09);
+.sidebar-menu .el-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
   color: #fff;
-  font-weight: 550;
+}
+.sidebar-menu .el-menu-item.is-active {
+  background: linear-gradient(90deg, rgba(13, 148, 136, 0.28), rgba(13, 148, 136, 0.08));
+  color: #fff;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(94, 234, 212, 0.14);
 }
 .sidebar-menu .el-menu-item.is-active::before {
   content: '';
@@ -197,19 +220,26 @@ function handleLogout() {
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 20px;
-  border-radius: 2px;
-  background: #14b8a6;
+  height: 22px;
+  border-radius: 0 3px 3px 0;
+  background: #2dd4bf;
 }
-.menu-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.5; flex-shrink: 0; }
+.menu-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.45;
+  flex-shrink: 0;
+}
 
-.sidebar-footer { padding: 14px 16px; border-top: 1px solid rgba(255,255,255,0.06); }
+.sidebar-footer { padding: 14px 16px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
 .user-info { display: flex; align-items: center; gap: 12px; }
 .avatar {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: #0f766e;
+  background: linear-gradient(135deg, var(--accent), #2dd4bf);
   color: #fff;
   display: flex;
   align-items: center;
@@ -217,16 +247,18 @@ function handleLogout() {
   font-weight: 650;
   font-size: 14px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.3);
 }
 .user-name { font-size: 13px; font-weight: 550; color: #fff; }
-.user-role { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.user-role { font-size: 11px; color: rgba(255, 255, 255, 0.4); margin-top: 2px; }
 
-/* ---- 主区域 ---- */
+/* ---- 主区域：毛玻璃顶栏 ---- */
 .app-body { min-width: 0; }
 .app-header {
   height: 60px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -237,15 +269,20 @@ function handleLogout() {
   z-index: 10;
 }
 .header-left { display: flex; align-items: baseline; gap: 14px; }
-.header-title { font-size: 16px; font-weight: 600; color: var(--text-1); }
+.header-title {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
 .header-greeting { font-size: 13px; color: var(--text-3); }
 .logout-btn { color: var(--text-2); gap: 6px; font-size: 13px; }
 .logout-btn:hover { color: var(--danger); background: transparent; }
 
-.app-main { padding: 24px 28px; }
+.app-main { padding: 24px 28px 48px; }
 
 @media (max-width: 900px) {
-  .app-sidebar { width: 200px !important; }
+  .app-sidebar { width: 208px !important; }
   .header-greeting { display: none; }
 }
 </style>

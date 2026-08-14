@@ -6,7 +6,9 @@
     </div>
 
     <div v-if="plans.length === 0" class="empty-state big-empty">
-      <div class="empty-icon">📋</div><p>还没有学习计划</p>
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/></svg>
+      </div><p>还没有学习计划</p>
       <el-button type="primary" @click="openCreate">创建第一个计划</el-button>
     </div>
 
@@ -20,7 +22,7 @@
         </div>
         <p class="plan-desc">{{ plan.description || '暂无描述' }}</p>
         <el-progress :percentage="plan.progressPercent || 0" :stroke-width="8"
-                     :color="['#0f766e', '#14b8a6']" style="margin:16px 0" />
+                     :color="['#0d9488', '#2dd4bf']" style="margin:16px 0" />
         <div class="plan-date">{{ plan.startDate }} ~ {{ plan.endDate }}</div>
         <div class="plan-items">
           <div v-for="item in (plan.items || [])" :key="item.id" class="plan-item">
@@ -342,7 +344,7 @@ onMounted(load)
 .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .q-num {
   width: 24px; height: 24px; border-radius: 50%;
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 600;
 }

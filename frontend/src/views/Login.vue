@@ -20,8 +20,8 @@
               <path d="M14 16L24 22L34 16L24 10L14 16Z" fill="white"/>
               <defs>
                 <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48">
-                  <stop offset="0%" stop-color="#0f766e"/>
-                  <stop offset="100%" stop-color="#14b8a6"/>
+                  <stop offset="0%" stop-color="#0D9488"/>
+                  <stop offset="100%" stop-color="#2DD4BF"/>
                 </linearGradient>
               </defs>
             </svg>
@@ -158,9 +158,10 @@ async function handleRegister() {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(900px 520px at 85% -10%, rgba(15, 118, 110, 0.08), transparent 60%),
-    radial-gradient(800px 460px at -10% 110%, rgba(20, 184, 166, 0.06), transparent 60%),
-    #fafafa;
+    radial-gradient(900px 520px at 85% -10%, rgba(13, 148, 136, 0.09), transparent 60%),
+    radial-gradient(820px 460px at -10% 110%, rgba(217, 119, 6, 0.06), transparent 60%),
+    radial-gradient(700px 420px at 55% 10%, rgba(79, 70, 229, 0.05), transparent 60%),
+    #f7f8fa;
   overflow: hidden;
   position: relative;
 }
@@ -173,25 +174,25 @@ async function handleRegister() {
 }
 .shape-1 {
   width: 600px; height: 600px;
-  background: rgba(15, 118, 110, 0.45);
+  background: rgba(13, 148, 136, 0.4);
   top: -200px; right: -100px;
   animation-delay: 0s;
 }
 .shape-2 {
   width: 400px; height: 400px;
-  background: rgba(20, 184, 166, 0.4);
+  background: rgba(217, 119, 6, 0.32);
   bottom: -100px; left: -80px;
   animation-delay: 5s;
 }
 .shape-3 {
   width: 300px; height: 300px;
-  background: rgba(39, 39, 42, 0.3);
+  background: rgba(79, 70, 229, 0.28);
   top: 50%; left: 60%;
   animation-delay: 10s;
 }
 .shape-4 {
   width: 200px; height: 200px;
-  background: rgba(15, 118, 110, 0.35);
+  background: rgba(124, 58, 237, 0.28);
   bottom: 20%; right: 30%;
   animation-delay: 15s;
 }
@@ -216,22 +217,23 @@ async function handleRegister() {
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 16px;
-  padding: 44px 40px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  padding: 46px 42px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(15, 23, 42, 0.04);
 }
 
 .logo-section { text-align: center; margin-bottom: 36px; }
 .logo-icon { width: 56px; height: 56px; margin: 0 auto 16px; }
 .system-title {
-  font-size: 23px; font-weight: 650; color: var(--text-1);
-  margin: 0 0 4px; letter-spacing: 2px;
+  font-size: 23px; font-weight: 700; color: var(--text-1);
+  margin: 0 0 4px; letter-spacing: 0.14em;
 }
 .system-subtitle {
-  font-size: 12px; color: var(--text-3); margin: 0; letter-spacing: 1.5px;
+  font-size: 12px; color: var(--text-3); margin: 0; letter-spacing: 0.22em;
   text-transform: uppercase;
 }
 
@@ -251,17 +253,19 @@ async function handleRegister() {
 .login-btn {
   width: 100%;
   height: 48px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
-  letter-spacing: 4px;
-  background: var(--accent);
+  letter-spacing: 0.3em;
+  background: linear-gradient(135deg, #0d9488, #0f766e);
   border: none;
-  transition: all 0.3s;
+  box-shadow: 0 2px 10px rgba(13, 148, 136, 0.28);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
 }
 .login-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
+  box-shadow: 0 10px 24px rgba(13, 148, 136, 0.32);
+  filter: saturate(1.08);
 }
 .login-btn:active { transform: translateY(0); }
 
@@ -271,6 +275,6 @@ async function handleRegister() {
 }
 
 /* Dialog */
-:deep(.el-dialog) { border-radius: 16px; }
+:deep(.el-dialog) { border-radius: 18px; }
 :deep(.el-dialog__header) { text-align: center; font-size: 18px; font-weight: 600; }
 </style>

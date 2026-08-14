@@ -6,7 +6,9 @@
     </div>
 
     <div v-if="courses.length === 0" class="empty-state">
-      <div class="empty-icon">📚</div>
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
       <p>{{ isAdmin ? '暂无课程，点击上方按钮添加' : '暂无课程，请联系管理员添加' }}</p>
     </div>
 
@@ -125,12 +127,12 @@ const editingId = ref(null)
 const form = reactive({ name: '', category: '', description: '' })
 
 const COVER_GRADIENTS = [
-  'linear-gradient(135deg, #0f766e, #14b8a6)',
-  'linear-gradient(135deg, #4338ca, #6366f1)',
+  'linear-gradient(135deg, #0d9488, #2dd4bf)',
+  'linear-gradient(135deg, #4f46e5, #818cf8)',
   'linear-gradient(135deg, #7c3aed, #a855f7)',
-  'linear-gradient(135deg, #b45309, #d97706)',
-  'linear-gradient(135deg, #be123c, #e11d48)',
-  'linear-gradient(135deg, #0369a1, #0ea5e9)'
+  'linear-gradient(135deg, #d97706, #fbbf24)',
+  'linear-gradient(135deg, #e11d48, #fb7185)',
+  'linear-gradient(135deg, #0284c7, #38bdf8)'
 ]
 function courseCoverStyle(course) {
   const idx = ((course.id || 0) % COVER_GRADIENTS.length + COVER_GRADIENTS.length) % COVER_GRADIENTS.length
@@ -224,51 +226,48 @@ onMounted(load)
 <style scoped>
 .page { max-width: 1200px; margin: 0 auto; }
 .pagination-wrap { display: flex; justify-content: center; margin-top: 16px; }
-.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
-
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
 }
 .course-card {
-  background: #fff; border-radius: 16px; overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-  transition: all 0.3s;
+  background: var(--surface); border-radius: var(--radius-lg); overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   animation: fadeUp 0.4s ease-out both;
 }
-.course-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.course-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
 .course-cover {
   height: 80px; display: flex; align-items: center; justify-content: center;
   font-size: 32px; font-weight: 700; color: #fff;
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
 }
 .course-body { padding: 16px 20px; }
 .course-category { margin-bottom: 8px; }
-.course-name { font-size: 16px; font-weight: 600; color: #18181b; margin: 0 0 6px; }
-.course-desc { font-size: 13px; color: #999; margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.course-name { font-size: 16px; font-weight: 600; color: var(--text-1); margin: 0 0 6px; letter-spacing: -0.01em; }
+.course-desc { font-size: 13px; color: var(--text-3); margin: 0; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .course-actions { padding: 0 20px 16px; display: flex; gap: 8px; }
 
 /* Course detail dialog */
 .course-detail { }
-.detail-desc { font-size: 14px; color: #666; line-height: 1.6; margin: 0; }
-.detail-section-title { font-size: 15px; font-weight: 600; color: #18181b; margin: 0 0 12px; }
+.detail-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; margin: 0; }
+.detail-section-title { font-size: 15px; font-weight: 600; color: var(--text-1); margin: 0 0 12px; }
 
 .kp-select-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
 .kp-select-item {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 14px; border-radius: 10px;
-  background: #f8f9fc; cursor: pointer;
-  transition: all 0.2s;
+  background: var(--surface-2); cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
 }
-.kp-select-item:hover { background: #f0fdfa; }
-.kp-select-item.selected { background: #f0fdfa; border: 1px solid rgba(15, 118, 110, 0.25); }
+.kp-select-item:hover { background: var(--accent-soft); }
+.kp-select-item.selected { background: var(--accent-soft); border: 1px solid var(--accent-border); }
 .kp-select-info { display: flex; flex-direction: column; gap: 2px; }
-.kp-select-name { font-size: 13px; font-weight: 500; color: #333; }
-.kp-select-level { font-size: 11px; color: #999; }
+.kp-select-name { font-size: 13px; font-weight: 500; color: var(--text-1); }
+.kp-select-level { font-size: 11px; color: var(--text-3); }
 
 .empty-state { text-align: center; padding: 80px 20px; color: #999; }
-.empty-icon { font-size: 48px; margin-bottom: 12px; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 </style>

@@ -312,7 +312,7 @@ onMounted(loadData)
 /* Quiz area */
 .quiz-area { min-height: 200px; }
 .quiz-loading { text-align: center; padding: 80px 0; color: #999; font-size: 15px; }
-.quiz-kp-name { font-size: 16px; color: #18181b; margin: 0 0 20px; padding-bottom: 12px; border-bottom: 2px solid #0f766e; }
+.quiz-kp-name { font-size: 16px; color: var(--text-1); margin: 0 0 20px; padding-bottom: 12px; border-bottom: 2px solid var(--accent); }
 
 /* Questions */
 .quiz-question { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
@@ -320,7 +320,7 @@ onMounted(loadData)
 .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .q-num {
   width: 24px; height: 24px; border-radius: 50%;
-  background: linear-gradient(135deg, #0f766e, #14b8a6);
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 600;
 }

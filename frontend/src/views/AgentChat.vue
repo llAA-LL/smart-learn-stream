@@ -16,7 +16,9 @@
       <!-- Messages -->
       <div ref="msgListRef" class="chat-messages">
         <div v-if="messages.length === 0" class="chat-welcome">
-          <div class="welcome-icon">🤖</div>
+          <div class="welcome-icon">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><path d="M8 13h.01M16 13h.01M9 17h6"/></svg>
+          </div>
           <h4>你好，我是你的 AI 学习助手</h4>
           <p>试试问我：</p>
           <div class="suggestion-list">
@@ -249,12 +251,12 @@ watch(messages, scrollBottom, { deep: true })
 .chat-welcome p { font-size: 13px; color: #999; margin: 0 0 12px; }
 .suggestion-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .suggestion-chip {
-  font-size: 13px; padding: 6px 14px; background: #f0fdfa; color: #0f766e;
+  font-size: 13px; padding: 6px 14px; background: var(--accent-soft); color: var(--accent);
   border-radius: 20px; cursor: pointer; transition: all 0.2s;
 }
 .citation-row { margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .citation-label { font-size: 12px; color: #999; flex-shrink: 0; }
-.suggestion-chip:hover { background: #0f766e; color: #fff; }
+.suggestion-chip:hover { background: var(--accent); color: #fff; }
 
 .chat-msg { display: flex; gap: 10px; margin-bottom: 16px; }
 .chat-msg.user { flex-direction: row-reverse; }
@@ -263,13 +265,13 @@ watch(messages, scrollBottom, { deep: true })
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 600; color: #fff;
 }
-.chat-msg.user .msg-avatar { background: #0f766e; }
+.chat-msg.user .msg-avatar { background: var(--accent); }
 .chat-msg.assistant .msg-avatar { background: linear-gradient(135deg, #7c3aed, #a855f7); }
 .msg-body { max-width: 85%; }
 .msg-content {
   padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.7; word-break: break-word;
 }
-.chat-msg.user .msg-content { background: #0f766e; color: #fff; border-bottom-right-radius: 4px; }
+.chat-msg.user .msg-content { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
 .chat-msg.assistant .msg-content { background: #fff; color: #333; border: 1px solid #eee; border-bottom-left-radius: 4px; }
 .msg-content :deep(h2) { font-size: 16px; margin: 8px 0 4px; }
 .msg-content :deep(h3) { font-size: 15px; margin: 6px 0 4px; }

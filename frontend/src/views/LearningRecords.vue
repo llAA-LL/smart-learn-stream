@@ -9,7 +9,9 @@
     <div class="card mastery-card">
       <h3 class="section-title">知识点掌握度</h3>
       <div v-if="mastery.length === 0" class="empty-state">
-        <div class="empty-icon">📊</div><p>暂无数据，先记录学习吧</p>
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="0.5"/><rect x="12" y="8" width="3" height="10" rx="0.5"/><rect x="17" y="5" width="3" height="13" rx="0.5"/></svg>
+        </div><p>暂无数据，先记录学习吧</p>
       </div>
       <div class="mastery-list" v-else>
         <div v-for="m in mastery" :key="m.id" class="mastery-item">
@@ -147,7 +149,7 @@ onMounted(load)
 .mastery-count { font-size: 11px; color: #999; }
 
 .slider-wrap { display: flex; align-items: center; gap: 12px; width: 100%; }
-.slider-val { font-size: 14px; font-weight: 600; color: #0f766e; width: 40px; }
+.slider-val { font-size: 14px; font-weight: 600; color: var(--accent); width: 40px; }
 
 .empty-state { text-align: center; padding: 40px 20px; color: #999; }
 .empty-icon { font-size: 40px; margin-bottom: 8px; }
