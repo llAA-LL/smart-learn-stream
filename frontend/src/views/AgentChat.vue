@@ -80,6 +80,7 @@
 import { ref, nextTick, watch } from 'vue'
 import axios from 'axios'
 import { renderMarkdown } from '../utils/markdown'
+import { createSseParser } from '../utils/sse'
 
 const messages = ref([])
 const input = ref('')
@@ -135,50 +136,27 @@ async function send(text) {
 
     const reader = resp.body.getReader()
     const decoder = new TextDecoder()
-    let buffer = ''
+    const parser = createSseParser((type, data) => {
+      if (type === 'citations') {
+        try {
+          messages.value[msgIdx].citations = JSON.parse(data)
+        } catch {}
+      } else if (type === 'delta') {
+        messages.value[msgIdx].content += data
+        scrollBottom()
+      } else if (type === 'error') {
+        messages.value[msgIdx].content = '抱歉，服务暂时不可用，请稍后再试。'
+      } else if (type === 'done') {
+        // 完成事件，无额外数据
+      }
+    })
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
-      buffer += decoder.decode(value, { stream: true })
-
-      const lines = buffer.split('\n')
-      buffer = lines.pop() || ''
-
-      let eventType = ''
-      let pendingData = []
-      const flushEvent = () => {
-        if (pendingData.length === 0) return
-        // SSE 规范：同一事件的多条 data: 行需要用 \n 连接（Spring SseEmitter
-        // 会把回答里的换行拆成多条 data: 行），否则段落会糊在一起
-        const data = pendingData.join('\n')
-        pendingData = []
-        if (eventType === 'citations') {
-          try {
-            messages.value[msgIdx].citations = JSON.parse(data)
-          } catch {}
-        } else if (eventType === 'delta') {
-          messages.value[msgIdx].content += data
-          scrollBottom()
-        } else if (eventType === 'error') {
-          messages.value[msgIdx].content = '抱歉，服务暂时不可用，请稍后再试。'
-        } else if (eventType === 'done') {
-          // 完成事件，无额外数据
-        }
-      }
-      for (const line of lines) {
-        // 兼容 "event: xxx"（带空格）与 "event:xxx"（Spring SseEmitter 无空格）两种格式
-        if (line.startsWith('event:')) {
-          flushEvent()
-          eventType = line.slice(6).trim()
-        } else if (line.startsWith('data:')) {
-          pendingData.push(line.slice(5).replace(/^ /, ''))
-        } else if (line === '') {
-          // 空行 = 事件结束
-          flushEvent()
-        }
-      }
+      parser.push(decoder.decode(value, { stream: true }))
     }
+    parser.flush()
 
     // Save to history
     const finalReply = messages.value[msgIdx].content
