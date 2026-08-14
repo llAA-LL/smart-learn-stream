@@ -77,6 +77,7 @@
 <script setup>
 import { ref, nextTick, watch } from 'vue'
 import axios from 'axios'
+import { renderMarkdown } from '../utils/markdown'
 
 const messages = ref([])
 const input = ref('')
@@ -215,28 +216,6 @@ function scrollBottom() {
   })
 }
 
-function renderMarkdown(text) {
-  if (!text) return ''
-  let html = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-  // Code blocks
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
-  // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
-  // Bold
-  html = html.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-  // Headings
-  html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>')
-  html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>')
-  html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>')
-  // List items
-  html = html.replace(/^- (.+)$/gm, '<li>$1</li>')
-  // Newlines
-  html = html.replace(/\n\n/g, '</p><p>')
-  html = html.replace(/\n/g, '<br>')
-  return '<p>' + html + '</p>'
-}
-
 watch(messages, scrollBottom, { deep: true })
 </script>
 
@@ -253,11 +232,11 @@ watch(messages, scrollBottom, { deep: true })
   padding: 16px 20px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0;
 }
 .chat-header-left { display: flex; align-items: center; gap: 12px; }
-.chat-header-left h3 { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0; }
+.chat-header-left h3 { font-size: 16px; font-weight: 600; color: #18181b; margin: 0; }
 .agent-desc { font-size: 12px; color: #999; margin: 2px 0 0; }
 .agent-avatar {
   width: 40px; height: 40px; border-radius: 12px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 14px; flex-shrink: 0;
 }
@@ -270,12 +249,12 @@ watch(messages, scrollBottom, { deep: true })
 .chat-welcome p { font-size: 13px; color: #999; margin: 0 0 12px; }
 .suggestion-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .suggestion-chip {
-  font-size: 13px; padding: 6px 14px; background: #f0f0ff; color: #667eea;
+  font-size: 13px; padding: 6px 14px; background: #f0fdfa; color: #0f766e;
   border-radius: 20px; cursor: pointer; transition: all 0.2s;
 }
 .citation-row { margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .citation-label { font-size: 12px; color: #999; flex-shrink: 0; }
-.suggestion-chip:hover { background: #667eea; color: #fff; }
+.suggestion-chip:hover { background: #0f766e; color: #fff; }
 
 .chat-msg { display: flex; gap: 10px; margin-bottom: 16px; }
 .chat-msg.user { flex-direction: row-reverse; }
@@ -284,13 +263,13 @@ watch(messages, scrollBottom, { deep: true })
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 600; color: #fff;
 }
-.chat-msg.user .msg-avatar { background: #667eea; }
-.chat-msg.assistant .msg-avatar { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.chat-msg.user .msg-avatar { background: #0f766e; }
+.chat-msg.assistant .msg-avatar { background: linear-gradient(135deg, #7c3aed, #a855f7); }
 .msg-body { max-width: 85%; }
 .msg-content {
   padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.7; word-break: break-word;
 }
-.chat-msg.user .msg-content { background: #667eea; color: #fff; border-bottom-right-radius: 4px; }
+.chat-msg.user .msg-content { background: #0f766e; color: #fff; border-bottom-right-radius: 4px; }
 .chat-msg.assistant .msg-content { background: #fff; color: #333; border: 1px solid #eee; border-bottom-left-radius: 4px; }
 .msg-content :deep(h2) { font-size: 16px; margin: 8px 0 4px; }
 .msg-content :deep(h3) { font-size: 15px; margin: 6px 0 4px; }

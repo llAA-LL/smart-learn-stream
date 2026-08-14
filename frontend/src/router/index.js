@@ -1,5 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+/**
+ * @typedef {import('vue-router').RouteRecordRaw} RouteRecordRaw
+ * @typedef {import('vue-router').RouteLocationNormalized} RouteLocationNormalized
+ * @typedef {import('vue-router').NavigationGuardNext} NavigationGuardNext
+ */
+
+/**
+ * 路由元信息扩展。
+ * @typedef {Object} AppRouteMeta
+ * @property {boolean} [noAuth] - 无需登录即可访问
+ */
+
+/** @type {RouteRecordRaw[]} */
 const routes = [
   {
     path: '/login',
@@ -31,6 +44,12 @@ const router = createRouter({
   routes
 })
 
+/**
+ * 全局前置守卫：无 token 一律重定向登录页。
+ * @param {RouteLocationNormalized} to - 目标路由
+ * @param {RouteLocationNormalized} from - 来源路由
+ * @param {NavigationGuardNext} next
+ */
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   if (to.meta.noAuth || token) {

@@ -4,5 +4,5 @@
 
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Microsoft YaHei', sans-serif; background: #f5f7fa; }
+body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
 </style>

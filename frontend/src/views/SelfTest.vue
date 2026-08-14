@@ -211,11 +211,11 @@ function onCourseChange() {
 
 async function loadData() {
   const [c, k, h] = await Promise.all([
-    courseApi.list(), kgApi.listNodes(),
+    courseApi.list({ page: 1, pageSize: 999 }), kgApi.listNodes(),
     quizApi.history({ page: historyPage.value, pageSize: historyPageSize.value })
       .catch(() => ({ data: { data: { list: [], total: 0 } } }))
   ])
-  courses.value = c.data.data
+  courses.value = c.data.data.list
   kps.value = k.data.data
   history.value = h.data.data.list || []
   historyTotal.value = h.data.data.total || 0
@@ -288,7 +288,7 @@ onMounted(loadData)
 <style scoped>
 .page { max-width: 900px; margin: 0 auto; }
 .page-header { margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 
 .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 20px; }
 
@@ -312,7 +312,7 @@ onMounted(loadData)
 /* Quiz area */
 .quiz-area { min-height: 200px; }
 .quiz-loading { text-align: center; padding: 80px 0; color: #999; font-size: 15px; }
-.quiz-kp-name { font-size: 16px; color: #1a1a2e; margin: 0 0 20px; padding-bottom: 12px; border-bottom: 2px solid #667eea; }
+.quiz-kp-name { font-size: 16px; color: #18181b; margin: 0 0 20px; padding-bottom: 12px; border-bottom: 2px solid #0f766e; }
 
 /* Questions */
 .quiz-question { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
@@ -320,7 +320,7 @@ onMounted(loadData)
 .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .q-num {
   width: 24px; height: 24px; border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 600;
 }
@@ -359,5 +359,5 @@ onMounted(loadData)
 .result-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; }
 
 /* History */
-.section-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 16px; }
+.section-title { font-size: 16px; font-weight: 600; color: #18181b; margin: 0 0 16px; }
 </style>

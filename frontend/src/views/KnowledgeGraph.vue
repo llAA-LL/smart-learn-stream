@@ -3,6 +3,12 @@
     <div class="page-header">
       <h2>知识图谱</h2>
       <div class="header-actions">
+        <span v-if="graphNodes.length" class="graph-stats">
+          {{ graphNodes.length }} 个知识点 · {{ graphEdges.length }} 条依赖
+        </span>
+        <el-button size="large" @click="zoomIn">放大</el-button>
+        <el-button size="large" @click="zoomOut">缩小</el-button>
+        <el-button size="large" @click="resetView">重置视角</el-button>
         <el-select v-model="selectedCourse" placeholder="选择课程" size="large" style="width:220px" @change="renderGraph">
           <el-option label="全部课程" :value="null" />
           <el-option v-for="c in courses" :key="c.id" :label="c.name" :value="c.id" />
@@ -12,10 +18,35 @@
     </div>
 
     <div class="graph-card card">
-      <div v-if="graphNodes.length === 0" class="empty-state">
+      <div v-if="graphError" class="graph-error">{{ graphError }}</div>
+      <div v-else-if="graphNodes.length === 0" class="empty-state">
         <p>暂无知识点数据</p>
       </div>
-      <div ref="graphRef" class="graph-container" v-show="graphNodes.length > 0"></div>
+      <template v-else>
+        <div class="graph-hint">滚轮缩放 · 拖拽平移 · 悬停高亮依赖 · 点击节点查看详情</div>
+        <div ref="viewportRef" class="graph-viewport"
+             @wheel.prevent="onWheel" @mousedown="onDragStart"
+             @mousemove="onDragMove" @mouseup="onDragEnd" @mouseleave="onDragEnd">
+          <div class="graph-world" :style="worldStyle">
+            <svg class="graph-edges" :width="worldW" :height="worldH">
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="#aab4cc" />
+                </marker>
+              </defs>
+              <line v-for="e in graphEdges" :key="edgeKey(e)" class="edge" :class="{ active: isEdgeActive(e) }"
+                    :x1="cx(e.source)" :y1="cy(e.source)" :x2="cx(e.target)" :y2="cy(e.target)"
+                    marker-end="url(#arrow)" />
+            </svg>
+            <div v-for="n in graphNodes" :key="n.id" class="graph-node"
+                 :class="nodeClass(n)"
+                 :style="{ left: nx(n.id) + 'px', top: ny(n.id) + 'px', background: levelColor(n.level) }"
+                 @mouseenter="selectedId = n.id" @mouseleave="selectedId = null" @click.stop="onNodeClick(n)">
+              <span class="node-name">{{ n.name }}</span>
+            </div>
+          </div>
+        </div>
+      </template>
     </div>
 
     <el-dialog :modelValue="showDialog" @update:modelValue="showDialog = $event"
@@ -55,125 +86,213 @@ import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { kgApi, courseApi } from '../api'
 import { useUserStore } from '../stores/user'
-import * as echarts from 'echarts'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
 const router = useRouter()
 const isAdmin = computed(() => userStore.user?.role === 'ADMIN')
 
-const nodes = ref([])
+const nodes = ref([])          // 全部知识点（用于编辑下拉）
 const courses = ref([])
 const graphNodes = ref([])
-const graphRef = ref(null)
+const graphEdges = ref([])
+const graphError = ref('')
+const selectedCourse = ref(null)
+const viewportRef = ref(null)
+
+const positions = ref({})      // id -> {x, y} 节点中心坐标
+const adjacency = ref({})      // id -> 邻居id数组
+const selectedId = ref(null)
+const worldW = ref(1200)
+const worldH = ref(720)
+const scale = ref(1)
+const pan = reactive({ x: 0, y: 0 })
+
+const NODE_W = 110
+const NODE_H = 40
+const PAD = 90
+const LEVEL_COLORS = ['#34d399', '#60a5fa', '#fbbf24', '#f87171', '#c084fc']
+
 const showDialog = ref(false)
 const editing = ref(false)
 const editingId = ref(null)
-const selectedCourse = ref(null)
 const form = reactive({ name: '', courseId: null, level: 0, description: '', prerequisiteIds: [] })
-let chart = null
+let autoFocused = false
 
-async function load() {
-  const [n, c] = await Promise.all([kgApi.listNodes(), courseApi.list()])
-  nodes.value = n.data.data
-  courses.value = c.data.data
+const worldStyle = computed(() => ({
+  width: worldW.value + 'px',
+  height: worldH.value + 'px',
+  transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale.value})`,
+  transformOrigin: '0 0'
+}))
+
+function levelColor(level) {
+  return LEVEL_COLORS[Math.min(level ?? 0, 4)]
 }
 
-function openCreate() {
-  editing.value = false; editingId.value = null
-  Object.assign(form, { name: '', courseId: selectedCourse.value, level: 0, description: '', prerequisiteIds: [] })
-  showDialog.value = true
+function cx(id) { return positions.value[id] ? positions.value[id].x : 0 }
+function cy(id) { return positions.value[id] ? positions.value[id].y : 0 }
+function nx(id) { return cx(id) - NODE_W / 2 }
+function ny(id) { return cy(id) - NODE_H / 2 }
+function edgeKey(e) { return e.source + '-' + e.target }
+function isEdgeActive(e) { return selectedId.value === e.source || selectedId.value === e.target }
+function nodeClass(n) {
+  if (selectedId.value === null || selectedId.value === undefined) return ''
+  if (selectedId.value === n.id) return 'active'
+  return isNeighbor(selectedId.value, n.id) ? '' : 'dim'
+}
+function isNeighbor(a, b) {
+  const list = adjacency.value[a]
+  return !!list && list.includes(b)
+}
+
+async function load() {
+  const [n, c] = await Promise.all([kgApi.listNodes(), courseApi.list({ page: 1, pageSize: 999 })])
+  nodes.value = n.data.data
+  courses.value = c.data.data.list
+  if (!selectedCourse.value && nodes.value.length > 40 && !autoFocused) {
+    autoFocused = true
+    const counts = new Map()
+    nodes.value.forEach(kp => counts.set(kp.courseId, (counts.get(kp.courseId) || 0) + 1))
+    const best = courses.value
+      .map(c => ({ course: c, count: counts.get(c.id) || 0 }))
+      .sort((a, b) => b.count - a.count)[0]
+    if (best && best.course && best.count > 0) {
+      selectedCourse.value = best.course.id
+      ElMessage.info(`节点较多，已自动聚焦到「${best.course.name}」，可切换"全部课程"浏览全貌`)
+    }
+  }
+}
+
+/**
+ * 分层布局：行 = level，列 = 课程；同层按"被依赖数量 + id"排序。
+ * 返回 id -> {x, y}（已缩放适配画布）。
+ */
+function buildPositions(nodeList, edgeList) {
+  const byLevel = new Map()
+  nodeList.forEach(n => {
+    const lvl = n.level ?? 0
+    if (!byLevel.has(lvl)) byLevel.set(lvl, [])
+    byLevel.get(lvl).push(n)
+  })
+  const inDegree = new Map(nodeList.map(n => [n.id, 0]))
+  edgeList.forEach(e => { if (inDegree.has(e.target)) inDegree.set(e.target, inDegree.get(e.target) + 1) })
+
+  const levels = [...byLevel.keys()].sort((a, b) => a - b)
+  const NODE_GAP = 190
+  const COURSE_GAP = 320
+  const ROW_GAP = 220
+  const GROUP_PAD = 140
+  const raw = new Map()
+
+  levels.forEach((lvl, li) => {
+    const list = byLevel.get(lvl).slice().sort((a, b) => {
+      const c = String(a.category || '').localeCompare(String(b.category || ''))
+      if (c !== 0) return c
+      return ((inDegree.get(a.id) || 0) - (inDegree.get(b.id) || 0)) || (a.id - b.id)
+    })
+    const groups = new Map()
+    list.forEach(n => {
+      const k = n.category || ''
+      if (!groups.has(k)) groups.set(k, [])
+      groups.get(k).push(n)
+    })
+    const groupArr = [...groups.values()]
+    const totalWidth = groupArr.reduce((w, arr) => w + (arr.length - 1) * NODE_GAP, 0)
+      + (groupArr.length - 1) * COURSE_GAP + GROUP_PAD
+    let cursor = -totalWidth / 2 + GROUP_PAD / 2
+    groupArr.forEach(arr => {
+      const start = cursor
+      arr.forEach((n, i) => raw.set(n.id, { x: start + i * NODE_GAP, y: li * ROW_GAP }))
+      cursor += (arr.length - 1) * NODE_GAP + COURSE_GAP
+    })
+  })
+
+  // 缩放适配画布
+  const xs = [...raw.values()].map(p => p.x)
+  const ys = [...raw.values()].map(p => p.y)
+  const minX = Math.min(...xs)
+  const maxX = Math.max(...xs)
+  const minY = Math.min(...ys)
+  const maxY = Math.max(...ys)
+  const vw = viewportRef.value ? viewportRef.value.clientWidth : 1200
+  const vh = viewportRef.value ? viewportRef.value.clientHeight : 720
+  worldW.value = vw
+  worldH.value = vh
+  const s = Math.min((vw - PAD * 2) / (maxX - minX || 1), (vh - PAD * 2) / (maxY - minY || 1), 1)
+  const out = {}
+  raw.forEach((p, id) => {
+    out[id] = { x: (p.x - minX) * s + PAD, y: (p.y - minY) * s + PAD }
+  })
+  positions.value = out
+}
+
+function buildAdjacency(edgeList) {
+  const map = {}
+  edgeList.forEach(e => {
+    ;(map[e.source] = map[e.source] || []).push(e.target)
+    ;(map[e.target] = map[e.target] || []).push(e.source)
+  })
+  adjacency.value = map
 }
 
 async function renderGraph() {
-  await nextTick()
-  if (!graphRef.value) return
-  if (chart) { chart.dispose(); chart = null }
+  graphError.value = ''
+  try {
+    await nextTick()
+    const res = await kgApi.graphData()
+    const allNodes = res.data?.data?.nodes || []
+    const allEdges = res.data?.data?.edges || []
 
-  const res = await kgApi.graphData()
-  const allNodes = res.data?.data?.nodes || []
-  const allEdges = res.data?.data?.edges || []
-
-  // 按课程过滤
-  let filteredNodes, filteredEdges
-  if (selectedCourse.value) {
-    const course = courses.value.find(c => c.id === selectedCourse.value)
-    const courseName = course?.name || ''
-    filteredNodes = allNodes.filter(n => n.category === courseName)
-    const nodeIds = new Set(filteredNodes.map(n => n.id))
-    filteredEdges = allEdges.filter(e => nodeIds.has(e.source) && nodeIds.has(e.target))
-  } else {
-    filteredNodes = allNodes
-    filteredEdges = allEdges
-  }
-
-  graphNodes.value = filteredNodes
-  if (filteredNodes.length === 0) return
-
-  const cats = [...new Set(filteredNodes.map(n => n.category))]
-  const colors = ['#667eea', '#f56c6c', '#38ef7d', '#e6a23c', '#409eff']
-
-  chart = echarts.init(graphRef.value)
-  chart.setOption({
-    tooltip: {
-      trigger: 'item',
-      formatter: p => {
-        if (p.dataType === 'node') {
-          return `<b>${p.name}</b><br/>课程: ${p.data.category}<br/>层级: L${p.data.level}`
-        }
-        const src = filteredNodes.find(n => n.id === p.data.source)
-        const tgt = filteredNodes.find(n => n.id === p.data.target)
-        return `前置: ${src?.name || '?'} → ${tgt?.name || '?'}`
-      }
-    },
-    legend: cats.length > 1 ? { data: cats, bottom: 0, textStyle: { fontSize: 12 } } : undefined,
-    series: [{
-      type: 'graph',
-      layout: 'force',
-      roam: true,
-      draggable: true,
-      categories: cats.map((c, i) => ({ name: c, itemStyle: { color: colors[i % colors.length] } })),
-      data: filteredNodes.map(n => ({
-        id: n.id, name: n.name, category: n.category,
-        symbolSize: 36 + n.level * 6,
-        label: { show: true, fontSize: 12, color: '#333' },
-        itemStyle: { borderColor: '#fff', borderWidth: 2 }
-      })),
-      edges: filteredEdges.map(e => ({
-        source: e.source, target: e.target,
-        lineStyle: { color: '#ccc', width: 2, curveness: 0.2 }
-      })),
-      force: {
-        repulsion: filteredNodes.length < 10 ? 400 : 250,
-        gravity: 0.06,
-        edgeLength: [100, 250],
-        layoutAnimation: true
-      },
-      emphasis: {
-        focus: 'adjacency',
-        lineStyle: { width: 4 },
-        itemStyle: { shadowBlur: 20, shadowColor: 'rgba(0,0,0,0.3)' }
-      }
-    }]
-  })
-
-  chart.on('click', (p) => {
-    if (p.dataType === 'node') {
-      if (isAdmin.value) {
-        const node = nodes.value.find(n => n.id === p.data.id)
-        if (node) {
-          editing.value = true; editingId.value = node.id
-          Object.assign(form, {
-            name: node.name, courseId: node.courseId, level: node.level,
-            description: node.description || '', prerequisiteIds: node.prerequisiteIds || []
-          })
-          showDialog.value = true
-        }
-      } else {
-        router.push(`/knowledge-point/${p.data.id}`)
-      }
+    let filteredNodes, filteredEdges
+    if (selectedCourse.value) {
+      const course = courses.value.find(c => c.id === selectedCourse.value)
+      const courseName = course?.name || ''
+      filteredNodes = allNodes.filter(n => n.category === courseName)
+      const nodeIds = new Set(filteredNodes.map(n => n.id))
+      filteredEdges = allEdges.filter(e => nodeIds.has(e.source) && nodeIds.has(e.target))
+    } else {
+      filteredNodes = allNodes
+      filteredEdges = allEdges
     }
-  })
+
+    graphNodes.value = filteredNodes
+    graphEdges.value = filteredEdges
+    if (!filteredNodes.length) {
+      graphError.value = '该课程暂无知识点数据'
+      return
+    }
+    buildPositions(filteredNodes, filteredEdges)
+    buildAdjacency(filteredEdges)
+    resetView()
+  } catch (e) {
+    console.error('知识图谱加载失败:', e)
+    graphError.value = '加载失败：' + (e && e.message ? e.message : e)
+  }
+}
+
+function onNodeClick(n) {
+  if (isAdmin.value) {
+    const node = nodes.value.find(x => x.id === n.id)
+    if (node) {
+      editing.value = true
+      editingId.value = node.id
+      Object.assign(form, {
+        name: node.name, courseId: node.courseId, level: node.level,
+        description: node.description || '', prerequisiteIds: node.prerequisiteIds || []
+      })
+      showDialog.value = true
+    }
+  } else {
+    router.push(`/knowledge-point/${n.id}`)
+  }
+}
+
+function openCreate() {
+  editing.value = false
+  editingId.value = null
+  Object.assign(form, { name: '', courseId: selectedCourse.value, level: 0, description: '', prerequisiteIds: [] })
+  showDialog.value = true
 }
 
 async function handleSave() {
@@ -189,16 +308,128 @@ async function handleSave() {
   renderGraph()
 }
 
-onMounted(async () => { await load(); renderGraph() })
+// ---- 缩放与平移 ----
+let dragging = false
+let lastX = 0
+let lastY = 0
+
+function zoomIn() {
+  scale.value = Math.min(3, scale.value * 1.2)
+}
+function zoomOut() {
+  scale.value = Math.max(0.2, scale.value / 1.2)
+}
+function resetView() {
+  scale.value = 1
+  pan.x = 0
+  pan.y = 0
+}
+function onWheel(e) {
+  const rect = viewportRef.value.getBoundingClientRect()
+  const ox = e.clientX - rect.left
+  const oy = e.clientY - rect.top
+  const old = scale.value
+  const ns = Math.min(3, Math.max(0.2, old * (e.deltaY < 0 ? 1.12 : 0.9)))
+  pan.x = ox - (ox - pan.x) * (ns / old)
+  pan.y = oy - (oy - pan.y) * (ns / old)
+  scale.value = ns
+}
+function onDragStart(e) {
+  dragging = true
+  lastX = e.clientX
+  lastY = e.clientY
+}
+function onDragMove(e) {
+  if (!dragging) return
+  pan.x += e.clientX - lastX
+  pan.y += e.clientY - lastY
+  lastX = e.clientX
+  lastY = e.clientY
+}
+function onDragEnd() {
+  dragging = false
+}
+
+onMounted(async () => {
+  await load()
+  renderGraph()
+})
 </script>
 
 <style scoped>
 .page { max-width: 1400px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 .header-actions { display: flex; gap: 12px; align-items: center; }
+.graph-stats { font-size: 13px; color: #8892a6; margin-right: 4px; }
 
-.graph-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 24px; }
-.graph-container { width: 100%; height: 650px; }
+.graph-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  padding: 24px;
+}
+.graph-hint {
+  font-size: 12px;
+  color: #9aa3b8;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.graph-viewport {
+  position: relative;
+  width: 100%;
+  height: 720px;
+  overflow: hidden;
+  cursor: grab;
+  background:
+    radial-gradient(circle, #e7ebf4 1px, transparent 1px),
+    linear-gradient(180deg, #f7f9fd 0%, #eef2f9 100%);
+  background-size: 24px 24px, 100% 100%;
+  border-radius: 12px;
+  border: 1px solid #eef1f7;
+  user-select: none;
+}
+.graph-viewport:active { cursor: grabbing; }
+.graph-world { position: absolute; top: 0; left: 0; }
+.graph-edges { position: absolute; top: 0; left: 0; overflow: visible; }
+.edge {
+  stroke: #aab4cc;
+  stroke-width: 2;
+  opacity: 0.55;
+  transition: opacity .15s, stroke .15s, stroke-width .15s;
+}
+.edge.active { stroke: #5b6b8c; opacity: 1; stroke-width: 3; }
+.graph-node {
+  position: absolute;
+  width: 110px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  cursor: pointer;
+  z-index: 2;
+  transition: transform .15s, opacity .15s, box-shadow .15s;
+}
+.graph-node.active {
+  transform: scale(1.12);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  z-index: 3;
+}
+.graph-node.dim { opacity: 0.25; }
+.node-name {
+  padding: 0 6px;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.graph-error { color: #f56c6c; font-size: 14px; text-align: center; padding: 80px 0; }
 .empty-state { text-align: center; padding: 100px 0; color: #999; font-size: 15px; }
 </style>

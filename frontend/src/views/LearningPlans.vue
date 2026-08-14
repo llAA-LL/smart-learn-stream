@@ -20,7 +20,7 @@
         </div>
         <p class="plan-desc">{{ plan.description || '暂无描述' }}</p>
         <el-progress :percentage="plan.progressPercent || 0" :stroke-width="8"
-                     :color="['#667eea', '#764ba2']" style="margin:16px 0" />
+                     :color="['#0f766e', '#14b8a6']" style="margin:16px 0" />
         <div class="plan-date">{{ plan.startDate }} ~ {{ plan.endDate }}</div>
         <div class="plan-items">
           <div v-for="item in (plan.items || [])" :key="item.id" class="plan-item">
@@ -206,8 +206,8 @@ let currentPlan = null
 let currentItem = null
 
 async function load() {
-  const [p, c, k] = await Promise.all([planApi.list(), courseApi.list(), kgApi.listNodes()])
-  plans.value = p.data.data; courses.value = c.data.data; kps.value = k.data.data
+  const [p, c, k] = await Promise.all([planApi.list(), courseApi.list({ page: 1, pageSize: 999 }), kgApi.listNodes()])
+  plans.value = p.data.data; courses.value = c.data.data.list; kps.value = k.data.data
 }
 
 function openCreate() {
@@ -294,7 +294,7 @@ onMounted(load)
 <style scoped>
 .page { max-width: 1200px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 
 .plans-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; }
 .plan-card {
@@ -305,7 +305,7 @@ onMounted(load)
 }
 .plan-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
 .plan-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.plan-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0; }
+.plan-title { font-size: 16px; font-weight: 600; color: #18181b; margin: 0; }
 .plan-desc { font-size: 13px; color: #999; margin: 0 0 4px; }
 .plan-date { font-size: 12px; color: #bbb; margin-bottom: 12px; }
 .plan-items { margin-top: 8px; }
@@ -342,7 +342,7 @@ onMounted(load)
 .q-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .q-num {
   width: 24px; height: 24px; border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 600;
 }

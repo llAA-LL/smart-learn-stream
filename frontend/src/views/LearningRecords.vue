@@ -135,10 +135,10 @@ onMounted(load)
 <style scoped>
 .page { max-width: 1200px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 
 .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 24px; }
-.section-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 20px; }
+.section-title { font-size: 16px; font-weight: 600; color: #18181b; margin: 0 0 20px; }
 
 .mastery-item { display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid #f5f5f5; }
 .mastery-item:last-child { border-bottom: none; }
@@ -147,7 +147,7 @@ onMounted(load)
 .mastery-count { font-size: 11px; color: #999; }
 
 .slider-wrap { display: flex; align-items: center; gap: 12px; width: 100%; }
-.slider-val { font-size: 14px; font-weight: 600; color: #667eea; width: 40px; }
+.slider-val { font-size: 14px; font-weight: 600; color: #0f766e; width: 40px; }
 
 .empty-state { text-align: center; padding: 40px 20px; color: #999; }
 .empty-icon { font-size: 40px; margin-bottom: 8px; }

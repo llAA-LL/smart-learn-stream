@@ -107,66 +107,85 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { graphic } from 'echarts/core'
 import { recordApi, planApi, recApi } from '../api'
-import * as echarts from 'echarts'
+import { useAsyncData } from '../composables/useAsyncData'
+import { useChart } from '../composables/useChart'
+
+/**
+ * @typedef {import('../api/types.js').LearningStats} LearningStats
+ * @typedef {import('../api/types.js').LearningPlan} LearningPlan
+ * @typedef {import('../api/types.js').Recommendation} Recommendation
+ */
 
 const router = useRouter()
-const stats = ref({})
-const plans = ref([])
-const recommendations = ref([])
+
+/** @type {import('vue').Ref<LearningStats>} */
+const { data: stats, run: loadStats } = useAsyncData({})
+/** @type {import('vue').Ref<LearningPlan[]>} */
+const { data: plans, run: loadPlans } = useAsyncData([])
+/** @type {import('vue').Ref<Recommendation[]>} */
+const { data: recommendations, run: loadRecs } = useAsyncData([])
+
 const chartRef = ref(null)
-const gradientColor = ['#667eea', '#764ba2']
+const chart = useChart(chartRef)
+const gradientColor = ['#0f766e', '#7c3aed']
 
 onMounted(async () => {
-  const [s, p, r] = await Promise.all([
-    recordApi.stats(), planApi.list(), recApi.recommend()
-  ])
-  stats.value = s.data.data
-  plans.value = p.data.data
-  recommendations.value = r.data.data
-
-  await nextTick()
-  if (chartRef.value) {
-    const chart = echarts.init(chartRef.value)
-    const dailyData = stats.value.dailyStats || []
-    chart.setOption({
-      tooltip: {
-        trigger: 'axis',
-        backgroundColor: '#fff',
-        borderColor: '#e8e8e8',
-        textStyle: { color: '#333' },
-        boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-      },
-      grid: { left: 40, right: 20, top: 20, bottom: 20 },
-      xAxis: {
-        type: 'category', data: dailyData.map(d => d.date),
-        axisLine: { lineStyle: { color: '#e8e8e8' } },
-        axisLabel: { color: '#999', fontSize: 11 }
-      },
-      yAxis: {
-        type: 'value', name: '分钟',
-        splitLine: { lineStyle: { color: '#f0f0f0' } },
-        axisLabel: { color: '#999' }
-      },
-      series: [{
-        data: dailyData.map(d => d.minutes),
-        type: 'line', smooth: true,
-        symbol: 'circle', symbolSize: 6,
-        lineStyle: { width: 3, color: '#667eea' },
-        itemStyle: { color: '#667eea' },
-        areaStyle: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(102,126,234,0.3)' },
-            { offset: 1, color: 'rgba(102,126,234,0.02)' }
-          ])
-        }
-      }]
-    })
-    window.addEventListener('resize', () => chart.resize())
+  try {
+    await Promise.all([
+      loadStats(() => recordApi.stats().then(r => r.data.data)),
+      loadPlans(() => planApi.list().then(r => r.data.data)),
+      loadRecs(() => recApi.recommend().then(r => r.data.data))
+    ])
+    renderTrendChart()
+  } catch {
+    // 拦截器已统一提示错误，这里仅兜底，避免未捕获的 Promise 异常
   }
 })
+
+/**
+ * 基于加载到的统计数据渲染「学习趋势」折线图。
+ * 图表实例由 useChart 管理：懒初始化、容器尺寸自适应、卸载自动销毁。
+ */
+function renderTrendChart() {
+  const dailyData = stats.value.dailyStats || []
+  chart.render({
+    tooltip: {
+      trigger: 'axis',
+      backgroundColor: '#fff',
+      borderColor: '#e8e8e8',
+      textStyle: { color: '#333' },
+      boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+    },
+    grid: { left: 40, right: 20, top: 20, bottom: 20 },
+    xAxis: {
+      type: 'category', data: dailyData.map(d => d.date),
+      axisLine: { lineStyle: { color: '#e8e8e8' } },
+      axisLabel: { color: '#999', fontSize: 11 }
+    },
+    yAxis: {
+      type: 'value', name: '分钟',
+      splitLine: { lineStyle: { color: '#f0f0f0' } },
+      axisLabel: { color: '#999' }
+    },
+    series: [{
+      data: dailyData.map(d => d.minutes),
+      type: 'line', smooth: true,
+      symbol: 'circle', symbolSize: 6,
+      lineStyle: { width: 3, color: '#0f766e' },
+      itemStyle: { color: '#0f766e' },
+      areaStyle: {
+        color: new graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: 'rgba(102,126,234,0.3)' },
+          { offset: 1, color: 'rgba(102,126,234,0.02)' }
+        ])
+      }
+    }]
+  })
+}
 </script>
 
 <style scoped>
@@ -180,9 +199,9 @@ onMounted(async () => {
 }
 .stat-card:nth-child(2) { animation-delay: 0.1s; }
 .stat-card:nth-child(3) { animation-delay: 0.2s; }
-.stat-today { background: linear-gradient(135deg, #667eea, #764ba2); }
-.stat-week { background: linear-gradient(135deg, #11998e, #38ef7d); }
-.stat-total { background: linear-gradient(135deg, #f093fb, #f5576c); }
+.stat-today { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+.stat-week { background: linear-gradient(135deg, #4338ca, #6366f1); }
+.stat-total { background: linear-gradient(135deg, #b45309, #d97706); }
 .stat-inner { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
 .stat-icon { width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; }
 .stat-body { color: #fff; }
@@ -207,9 +226,9 @@ onMounted(async () => {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 16px;
 }
-.card-header h3 { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0; }
+.card-header h3 { font-size: 16px; font-weight: 600; color: #18181b; margin: 0; }
 .card-sub { font-size: 12px; color: #999; }
-.card-link { font-size: 13px; color: #667eea; text-decoration: none; }
+.card-link { font-size: 13px; color: #0f766e; text-decoration: none; }
 .chart-container { height: 280px; }
 
 /* Recommendations */
@@ -240,9 +259,9 @@ onMounted(async () => {
   border: 1px solid #f0f0f0;
   transition: all 0.3s;
 }
-.plan-card:hover { border-color: #667eea44; box-shadow: 0 4px 16px rgba(102,126,234,0.08); }
+.plan-card:hover { border-color: rgba(15, 118, 110, 0.25); box-shadow: 0 4px 16px rgba(15, 118, 110, 0.08); }
 .plan-head { display: flex; justify-content: space-between; align-items: center; }
-.plan-title { font-weight: 600; font-size: 14px; color: #1a1a2e; }
+.plan-title { font-weight: 600; font-size: 14px; color: #18181b; }
 .plan-meta { display: flex; justify-content: space-between; font-size: 12px; color: #999; }
 
 /* Empty */

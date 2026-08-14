@@ -191,7 +191,7 @@ onMounted(loadAll)
 <style scoped>
 .page { max-width: 1400px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 
 .filter-bar { display: flex; gap: 12px; margin-bottom: 16px; }
 

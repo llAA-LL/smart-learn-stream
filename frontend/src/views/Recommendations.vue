@@ -75,11 +75,11 @@ onMounted(load)
 <style scoped>
 .page { max-width: 1400px; margin: 0 auto; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 
 .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-.section-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 20px; }
+.section-title { font-size: 16px; font-weight: 600; color: #18181b; margin: 0 0 20px; }
 
 .rec-card {
   display: flex; gap: 0; margin-bottom: 12px; border-radius: 12px;
@@ -99,7 +99,7 @@ onMounted(load)
 .badge-next { background: #fef6e8; color: #e6a23c; }
 .badge-new { background: #e8f4fd; color: #409eff; }
 .rec-course { font-size: 11px; color: #999; }
-.rec-name { font-size: 15px; font-weight: 600; color: #1a1a2e; margin: 0 0 4px; }
+.rec-name { font-size: 15px; font-weight: 600; color: #18181b; margin: 0 0 4px; }
 .rec-reason { font-size: 12px; color: #888; margin: 0; }
 
 .weak-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; text-decoration: none; cursor: pointer; transition: all 0.2s; }

@@ -20,8 +20,8 @@
               <path d="M14 16L24 22L34 16L24 10L14 16Z" fill="white"/>
               <defs>
                 <linearGradient id="logoGrad" x1="0" y1="0" x2="48" y2="48">
-                  <stop offset="0%" stop-color="#667eea"/>
-                  <stop offset="100%" stop-color="#764ba2"/>
+                  <stop offset="0%" stop-color="#0f766e"/>
+                  <stop offset="100%" stop-color="#14b8a6"/>
                 </linearGradient>
               </defs>
             </svg>
@@ -157,7 +157,10 @@ async function handleRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background:
+    radial-gradient(900px 520px at 85% -10%, rgba(15, 118, 110, 0.08), transparent 60%),
+    radial-gradient(800px 460px at -10% 110%, rgba(20, 184, 166, 0.06), transparent 60%),
+    #fafafa;
   overflow: hidden;
   position: relative;
 }
@@ -170,25 +173,25 @@ async function handleRegister() {
 }
 .shape-1 {
   width: 600px; height: 600px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: rgba(15, 118, 110, 0.45);
   top: -200px; right: -100px;
   animation-delay: 0s;
 }
 .shape-2 {
   width: 400px; height: 400px;
-  background: linear-gradient(135deg, #f093fb, #f5576c);
+  background: rgba(20, 184, 166, 0.4);
   bottom: -100px; left: -80px;
   animation-delay: 5s;
 }
 .shape-3 {
   width: 300px; height: 300px;
-  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  background: rgba(39, 39, 42, 0.3);
   top: 50%; left: 60%;
   animation-delay: 10s;
 }
 .shape-4 {
   width: 200px; height: 200px;
-  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  background: rgba(15, 118, 110, 0.35);
   bottom: 20%; right: 30%;
   animation-delay: 15s;
 }
@@ -213,21 +216,22 @@ async function handleRegister() {
 }
 
 .login-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  border-radius: 20px;
-  padding: 48px 40px;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 44px 40px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
 }
 
 .logo-section { text-align: center; margin-bottom: 36px; }
 .logo-icon { width: 56px; height: 56px; margin: 0 auto 16px; }
 .system-title {
-  font-size: 24px; font-weight: 700; color: #1a1a2e;
+  font-size: 23px; font-weight: 650; color: var(--text-1);
   margin: 0 0 4px; letter-spacing: 2px;
 }
 .system-subtitle {
-  font-size: 13px; color: #999; margin: 0; letter-spacing: 1px;
+  font-size: 12px; color: var(--text-3); margin: 0; letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
@@ -238,10 +242,10 @@ async function handleRegister() {
   transition: all 0.3s;
 }
 .login-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #667eea inset;
+  box-shadow: 0 0 0 1px var(--accent-border) inset;
 }
 .login-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px #667eea44 inset, 0 0 0 1px #667eea inset;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.2) inset;
 }
 
 .login-btn {
@@ -251,19 +255,19 @@ async function handleRegister() {
   font-size: 16px;
   font-weight: 600;
   letter-spacing: 4px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--accent);
   border: none;
   transition: all 0.3s;
 }
 .login-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
 }
 .login-btn:active { transform: translateY(0); }
 
 .register-link {
   text-align: center; margin-top: 24px;
-  font-size: 14px; color: #999;
+  font-size: 13.5px; color: var(--text-3);
 }
 
 /* Dialog */

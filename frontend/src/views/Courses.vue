@@ -12,7 +12,7 @@
 
     <div v-else class="courses-grid">
       <div v-for="course in courses" :key="course.id" class="course-card" :style="{ animationDelay: 0.05 * courses.indexOf(course) + 's' }">
-        <div class="course-cover">{{ course.name[0] }}</div>
+        <div class="course-cover" :style="courseCoverStyle(course)">{{ course.name[0] }}</div>
         <div class="course-body">
           <div class="course-category">
             <el-tag size="small" effect="plain">{{ course.category || '未分类' }}</el-tag>
@@ -124,6 +124,19 @@ const editing = ref(false)
 const editingId = ref(null)
 const form = reactive({ name: '', category: '', description: '' })
 
+const COVER_GRADIENTS = [
+  'linear-gradient(135deg, #0f766e, #14b8a6)',
+  'linear-gradient(135deg, #4338ca, #6366f1)',
+  'linear-gradient(135deg, #7c3aed, #a855f7)',
+  'linear-gradient(135deg, #b45309, #d97706)',
+  'linear-gradient(135deg, #be123c, #e11d48)',
+  'linear-gradient(135deg, #0369a1, #0ea5e9)'
+]
+function courseCoverStyle(course) {
+  const idx = ((course.id || 0) % COVER_GRADIENTS.length + COVER_GRADIENTS.length) % COVER_GRADIENTS.length
+  return { background: COVER_GRADIENTS[idx] }
+}
+
 async function load() {
   const res = await courseApi.list({ page: page.value, pageSize: pageSize.value })
   courses.value = res.data.data.list
@@ -212,7 +225,7 @@ onMounted(load)
 .page { max-width: 1200px; margin: 0 auto; }
 .pagination-wrap { display: flex; justify-content: center; margin-top: 16px; }
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.page-header h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0; }
+.page-header h2 { font-size: 20px; font-weight: 700; color: #18181b; margin: 0; }
 
 .courses-grid {
   display: grid;
@@ -229,18 +242,18 @@ onMounted(load)
 .course-cover {
   height: 80px; display: flex; align-items: center; justify-content: center;
   font-size: 32px; font-weight: 700; color: #fff;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #0f766e, #14b8a6);
 }
 .course-body { padding: 16px 20px; }
 .course-category { margin-bottom: 8px; }
-.course-name { font-size: 16px; font-weight: 600; color: #1a1a2e; margin: 0 0 6px; }
+.course-name { font-size: 16px; font-weight: 600; color: #18181b; margin: 0 0 6px; }
 .course-desc { font-size: 13px; color: #999; margin: 0; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .course-actions { padding: 0 20px 16px; display: flex; gap: 8px; }
 
 /* Course detail dialog */
 .course-detail { }
 .detail-desc { font-size: 14px; color: #666; line-height: 1.6; margin: 0; }
-.detail-section-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin: 0 0 12px; }
+.detail-section-title { font-size: 15px; font-weight: 600; color: #18181b; margin: 0 0 12px; }
 
 .kp-select-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
 .kp-select-item {
@@ -249,8 +262,8 @@ onMounted(load)
   background: #f8f9fc; cursor: pointer;
   transition: all 0.2s;
 }
-.kp-select-item:hover { background: #eef0ff; }
-.kp-select-item.selected { background: #eef0ff; border: 1px solid #667eea44; }
+.kp-select-item:hover { background: #f0fdfa; }
+.kp-select-item.selected { background: #f0fdfa; border: 1px solid rgba(15, 118, 110, 0.25); }
 .kp-select-info { display: flex; flex-direction: column; gap: 2px; }
 .kp-select-name { font-size: 13px; font-weight: 500; color: #333; }
 .kp-select-level { font-size: 11px; color: #999; }
