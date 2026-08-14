@@ -89,6 +89,8 @@ rag:
     chunk-size: 800
     chunk-overlap: 80
     batch-size: 32
+    # 启动自愈：探针检测到向量索引为空时自动重建（幂等）
+    auto-heal-on-empty: true
 
 logging:
   level:

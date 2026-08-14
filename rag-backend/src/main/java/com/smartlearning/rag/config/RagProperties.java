@@ -103,6 +103,11 @@ public class RagProperties {
         private int chunkSize = 800;
         private int chunkOverlap = 80;
         private int batchSize = 32;
+        /**
+         * 启动自愈：应用就绪后用探针查询检测向量索引是否为空，
+         * 为空则自动重建（幂等）。防止"向量库空、只剩关键词检索"的静默劣化。
+         */
+        private boolean autoHealOnEmpty = true;
 
         public int getChunkSize() {
             return chunkSize;
@@ -126,6 +131,14 @@ public class RagProperties {
 
         public void setBatchSize(int batchSize) {
             this.batchSize = batchSize;
+        }
+
+        public boolean isAutoHealOnEmpty() {
+            return autoHealOnEmpty;
+        }
+
+        public void setAutoHealOnEmpty(boolean autoHealOnEmpty) {
+            this.autoHealOnEmpty = autoHealOnEmpty;
         }
     }
 
